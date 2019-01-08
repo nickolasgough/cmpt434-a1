@@ -67,9 +67,15 @@ int main(int argc, char* argv[]) {
         handle_fault(1);
     }
 
-    while (strcmp(cmd, "quit\n") != 0) {
+    while (1) {
         printf("x-client ? ");
-        if (scanf("%s %s %s", cmd, lfile, rfile) < 0) {
+        if (scanf("%s", cmd) < 0) {
+            handle_fault(3);
+        }
+        if (strcmp(cmd, "quit") == 0) {
+            exit(0);
+        }
+        if (scanf("%s %s", lfile, rfile) < 0) {
             handle_fault(3);
         }
         
@@ -88,5 +94,5 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    return 0;
+    exit(0);
 }
