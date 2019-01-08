@@ -6,6 +6,9 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "x-files.h"
+
+
 #define STD_IN 0
 
 #define PORT_MIN 30000
@@ -28,15 +31,21 @@ int check_port(char* p) {
 void handle_fault(int err) {
     if (err == 1) {
         printf("usage: x-client <host name> <port number>\n");
+        exit(err);
     }
     if (err == 2) {
         printf("x-client: failed to allocate memory\n");
+        exit(err);
     }
     if (err == 3) {
         printf("x-client: failed to read command\n");
     }
-
-    exit(err);
+    if (err == 4) {
+        printf("x-client: failed to put the file\n");
+    }
+    if (err == 5) {
+        printf("x-client: the file does not exist\n");
+    }
 }
 
 
@@ -45,8 +54,20 @@ void get_file(char* lfile, char* rfile) {
 }
 
 
+int send_file(char* fpart) {
+    printf("%s\n", fpart);
+    return 1;
+}
+
+
 void put_file(char* lfile, char* rfile) {
-    printf("Putting file: %s, %s\n", lfile, rfile);
+    if (!file_exists(lfile)) {
+        handle_fault(5);
+        return;
+    }
+    if (!file_read(lfile, send_file)) {
+        handle_fault(4);
+    }
 }
 
 
