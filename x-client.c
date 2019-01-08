@@ -4,6 +4,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
 #include <string.h>
 
 #include "x-sockets.h"
@@ -58,8 +62,8 @@ void handle_fault(int err) {
 }
 
 
-void get_file(char* lfile, char* rfile) {
-    printf("Getting file: %s, %s\n", lfile, rfile);
+void get_file(char* lFile, char* rFile) {
+    printf("Getting file: %s, %s\n", lFile, rFile);
 }
 
 
@@ -69,12 +73,12 @@ int send_file(char* fpart) {
 }
 
 
-void put_file(char* lfile, char* rfile) {
-    if (!file_exists(lfile)) {
+void put_file(char* lFile, char* rFile) {
+    if (!file_exists(lFile)) {
         handle_fault(5);
         return;
     }
-    if (!file_read(lfile, send_file)) {
+    if (!file_read(lFile, send_file)) {
         handle_fault(4);
     }
 }
@@ -82,10 +86,10 @@ void put_file(char* lfile, char* rfile) {
 
 int main(int argc, char* argv[]) {
     char cmd[INPUT_MAX];
-    char lfile[INPUT_MAX];
-    char rfile[INPUT_MAX];
-    char* hname;
-    char* portn;
+    char lFile[INPUT_MAX];
+    char rFile[INPUT_MAX];
+    char* hName;
+    char* port;
     int sockFd;
     struct addrinfo sockInfo;
 
@@ -93,9 +97,9 @@ int main(int argc, char* argv[]) {
         handle_fault(1);
     }
 
-    hname = argv[1];
-    portn = argv[2];
-    if (!check_port(portn)) {
+    hName = argv[1];
+    port = argv[2];
+    if (!check_port(port)) {
         handle_fault(1);
     }
 
@@ -114,15 +118,15 @@ int main(int argc, char* argv[]) {
         if (strcmp(cmd, "quit") == 0) {
             exit(0);
         }
-        if (scanf("%s %s", lfile, rfile) < 0) {
+        if (scanf("%s %s", lFile, rFile) < 0) {
             handle_fault(3);
         }
         
         if (strcmp(cmd, "get") == 0) {
-            get_file(lfile, rfile);
+            get_file(lFile, rFile);
         }
         else if (strcmp(cmd, "put") == 0) {
-            put_file(lfile, rfile);
+            put_file(lFile, rFile);
         }
         else {
             printf("Unknown command.\n");
