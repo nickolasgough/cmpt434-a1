@@ -1,4 +1,4 @@
-/* # Nickolas Gough, nvg081, 11181823 */
+/* Nickolas Gough, nvg081, 11181823 */
 
 
 int file_exists(char* path);
