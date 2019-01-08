@@ -104,4 +104,7 @@ int main(int argc, char* argv[]) {
     if (clientFd == -1) {
         handle_fault(7);
     }
+    printf("Connection received!\n");
+
+    exit(0);
 }

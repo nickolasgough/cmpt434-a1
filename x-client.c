@@ -46,6 +46,14 @@ void handle_fault(int err) {
     if (err == 5) {
         printf("x-client: the file does not exist\n");
     }
+    if (err == 6) {
+        printf("x-client: failed to open tcp socket\n");
+        exit(err);
+    }
+    if (err == 7) {
+        printf("x-client: failed to connect on socket\n");
+        exit(err);
+    }
 }
 
 
@@ -77,6 +85,8 @@ int main(int argc, char* argv[]) {
     char rfile[INPUT_MAX];
     char* hname;
     char* portn;
+    int sockFd;
+    struct addrinfo sockInfo;
 
     if (argc != 3) {
         handle_fault(1);
@@ -86,6 +96,13 @@ int main(int argc, char* argv[]) {
     portn = argv[2];
     if (!check_port(portn)) {
         handle_fault(1);
+    }
+
+    if (!socket_tcp(&sockFd, &sockInfo, hName, port)) {
+        handle_fault(6);
+    }
+    if (connect(sockFd, sockInfo.ai_addr, sockInfo.ai_addrlen) == -1) {
+        handle_fault(7);
     }
 
     while (1) {
