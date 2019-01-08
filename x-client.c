@@ -22,6 +22,14 @@
 #define INPUT_MAX 1000
 
 
+typedef struct message_t {
+    int action;
+    char* lFile;
+    char* rFile;
+    char* part;
+}
+
+
 int check_port(char* p) {
     if (atoi(p) < PORT_MIN) {
         return 0;
@@ -67,20 +75,38 @@ void get_file(char* lFile, char* rFile) {
 }
 
 
-int send_file(char* fpart) {
-    printf("%s\n", fpart);
+void put_file(int sockFd, char* lFile, char* rFile) {
+    message_t msg;
+    FILE* fptr;
+    char* fpart;
+
+    if (access(path, F_OK)) {
+        return 0;
+    }
+    fptr = fopen(path, "r");
+    if (fptr == NULL) {
+        return 0;
+    }
+
+    fpart = calloc(INPUT_MAX, sizeof(char));
+    if (fpart == NULL) {
+        return 0;
+    }
+    msg.action = 1;
+    msg.lFile = lFile;
+    msg.rFile = rFile;
+    if (send(sockFd, msg, sizeof(msg), 0) == -1) {
+        return -1;
+    }
+    while (fread(fpart, sizeof(char), INPUT_MAX, fptr) > 0) {
+        if (send(sockFd, fpart, INPUT_MAX, 0) == -1) {
+            return -1;
+        }
+        memset(fpart, 0, INPUT_MAX);
+    }
+
+    fclose(fptr);
     return 1;
-}
-
-
-void put_file(char* lFile, char* rFile) {
-    if (!file_exists(lFile)) {
-        handle_fault(5);
-        return;
-    }
-    if (!file_read(lFile, send_file)) {
-        handle_fault(4);
-    }
 }
 
 
@@ -123,10 +149,10 @@ int main(int argc, char* argv[]) {
         }
         
         if (strcmp(cmd, "get") == 0) {
-            get_file(lFile, rFile);
+            get_file(sockFd, lFile, rFile);
         }
         else if (strcmp(cmd, "put") == 0) {
-            put_file(lFile, rFile);
+            put_file(sockFd, lFile, rFile);
         }
         else {
             printf("Unknown command.\n");
@@ -137,5 +163,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    close(sockFd);
     exit(0);
 }

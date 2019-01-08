@@ -20,6 +20,14 @@
 #define INPUT_MAX 1000
 
 
+typedef struct message_t {
+    int action;
+    char* lFile;
+    char* rFile;
+    char* part;
+}
+
+
 int check_port(char* p) {
     if (atoi(p) < PORT_MIN) {
         return 0;
@@ -60,6 +68,9 @@ void handle_fault(int err) {
     if (err == 7) {
         printf("tcp-server: failed to accept a connection\n");
     }
+    if (err == 8) {
+        printf("tcp-server: failed to receive on connection\n");
+    }
 }
 
 
@@ -71,6 +82,7 @@ int main(int argc, char* argv[]) {
     int clientFd;
     struct sockaddr clientAddr;
     socklen_t clientLen;
+    message_t msg;
     int qMax = 5;
 
     if (argc != 2) {
@@ -104,7 +116,15 @@ int main(int argc, char* argv[]) {
     if (clientFd == -1) {
         handle_fault(7);
     }
-    printf("Connection received!\n");
+
+    if (buffer == NULL) {
+        handle_fault(2);
+    }
+    while (1) {
+        if (recv(clientFd, msg, sizeof(message_t)) == -1) {
+            handle_fault(8);
+        }
+    }
 
     exit(0);
 }
