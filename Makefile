@@ -7,7 +7,7 @@ FLAGS = -g -std=gnu90 -Wall -pedantic
 all: x-client tcp-server
 
 # Part 1
-x-client: x-client.o x-files.o
+x-client: x-client.o x-sockets.o x-files.o
 	$(GCC) -o $@ $(FLAGS) $^
 
 x-client.o: x-client.c
