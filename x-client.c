@@ -112,10 +112,12 @@ void put_file(int sockFd, char* lFile, char* rFile) {
     while (fread(fPart, sizeof(char), INPUT_MAX, fptr) > 0) {
         printf("Sending %s\n of size %ld", fPart, strlen(fPart));
         if (send(sockFd, fPart, INPUT_MAX, 0) == -1) {
+            printf("Failed to send\n");
             return;
         }
         memset(fPart, 0, INPUT_MAX);
     }
+    printf("Finished sending the file\n");
 
     fclose(fptr);
     return;
