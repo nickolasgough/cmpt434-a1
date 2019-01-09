@@ -82,9 +82,14 @@ void put_file(int clientFd)  {
 
     sprintf(message, "%s", "ready");
     send(clientFd, message, INPUT_MAX, 0);
+    memset(message, 0, INPUT_MAX);
+
     recv(clientFd, fName, INPUT_MAX, 0);
+
     sprintf(message, "%s", "ready");
     send(clientFd, message, INPUT_MAX, 0);
+    memset(message, 0, INPUT_MAX);
+
     recv(clientFd, &fSize, sizeof(fSize), 0);
 
     fptr = fopen(fName, "a");
@@ -93,8 +98,10 @@ void put_file(int clientFd)  {
     }
     while (fSize > 0) {
         rSize = recv(clientFd, message, INPUT_MAX, 0);
-        fSize -= rSize;
         fwrite(message, sizeof(char), INPUT_MAX, fptr);
+
+        memset(message, 0, INPUT_MAX);
+        fSize -= rSize;
         printf("Appended to the file\n");
     }
     printf("Finished writing to the file\n");

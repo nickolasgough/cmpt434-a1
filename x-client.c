@@ -91,12 +91,22 @@ void put_file(int sockFd, char* lFile, char* rFile) {
     send(sockFd, message, INPUT_MAX, 0);
     recv(sockFd, message, INPUT_MAX, 0);
     strcmp(message, "ready");
+
+    memset(message, 0, INPUT_MAX);
+
     send(sockFd, rFile, INPUT_MAX, 0);
+    recv(sockFd, message, INPUT_MAX, 0);
+    strcmp(message, "ready");
+
+    memset(message, 0, INPUT_MAX);
+
     fseek(fptr, 0, SEEK_END);
     fSize = ftell(fptr);
     send(sockFd, &fSize, sizeof(fSize), 0);
     recv(sockFd, message, INPUT_MAX, 0);
     strcmp(message, "ready");
+
+    memset(message, 0, INPUT_MAX);
 
     while (fread(fPart, sizeof(char), INPUT_MAX, fptr) > 0) {
         if (send(sockFd, fPart, INPUT_MAX, 0) == -1) {
