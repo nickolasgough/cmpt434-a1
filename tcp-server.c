@@ -25,7 +25,7 @@ typedef struct message_t {
     char* lFile;
     char* rFile;
     char* part;
-}
+};
 
 
 int check_port(char* p) {
