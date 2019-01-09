@@ -92,6 +92,7 @@ void put_file(int clientFd)  {
 
     recv(clientFd, &fSize, sizeof(fSize), 0);
 
+    printf("Opening file %s with size %ld\n", fName, fSize);
     fptr = fopen(fName, "a");
     if (fptr == NULL) {
         return;
