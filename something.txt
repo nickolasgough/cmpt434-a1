@@ -1,3 +1,0 @@
-This is a test!
-
-What happens when I shorten the maximum length of the input?
