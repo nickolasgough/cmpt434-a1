@@ -74,6 +74,11 @@ void handle_fault(int err) {
 }
 
 
+void put_file(int clientFd, char* path)  {
+
+}
+
+
 int main(int argc, char* argv[]) {
     char* hName;
     char* port;
@@ -121,8 +126,11 @@ int main(int argc, char* argv[]) {
         handle_fault(2);
     }
     while (1) {
-        if (recv(clientFd, msg, sizeof(message_t)) == -1) {
+        if (recv(clientFd, (void*) &msg, sizeof(msg)) == -1) {
             handle_fault(8);
+        }
+        if (msg.action == 1) {
+            put_file(clientFd, msg.rFile);
         }
     }
 

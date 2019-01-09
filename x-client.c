@@ -87,14 +87,14 @@ void put_file(int sockFd, char* lFile, char* rFile) {
     if (fptr == NULL) {
         return 0;
     }
+    msg.lFile = lFile;
+    msg.rFile = rFile;
 
     fpart = calloc(INPUT_MAX, sizeof(char));
     if (fpart == NULL) {
         return 0;
     }
     msg.action = 1;
-    msg.lFile = lFile;
-    msg.rFile = rFile;
     if (send(sockFd, msg, sizeof(msg), 0) == -1) {
         return -1;
     }
@@ -103,6 +103,10 @@ void put_file(int sockFd, char* lFile, char* rFile) {
             return -1;
         }
         memset(fpart, 0, INPUT_MAX);
+    }
+    msg.action = 0;
+    if (send(sockFd, msg, sizeof(msg), 0) == -1) {
+        return -1;
     }
 
     fclose(fptr);
