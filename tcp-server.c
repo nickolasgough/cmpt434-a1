@@ -95,7 +95,9 @@ void put_file(int clientFd)  {
         rSize = recv(clientFd, message, INPUT_MAX, 0);
         fSize -= rSize;
         fwrite(message, sizeof(char), INPUT_MAX, fptr);
+        printf("Appended to the file\n");
     }
+    printf("Finished writing to the file\n");
 
     fclose(fptr);
 }
