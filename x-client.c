@@ -22,14 +22,6 @@
 #define INPUT_MAX 1000
 
 
-typedef struct message_t {
-    int action;
-    char* lFile;
-    char* rFile;
-    char* part;
-};
-
-
 int check_port(char* p) {
     if (atoi(p) < PORT_MIN) {
         return 0;
@@ -70,47 +62,51 @@ void handle_fault(int err) {
 }
 
 
-void get_file(char* lFile, char* rFile) {
+void get_file(int sockFd, char* lFile, char* rFile) {
     printf("Getting file: %s, %s\n", lFile, rFile);
 }
 
 
 void put_file(int sockFd, char* lFile, char* rFile) {
-    message_t msg;
     FILE* fptr;
-    char* fpart;
+    long int fSize;
+    char* fPart;
+    char* message;
 
-    if (access(path, F_OK)) {
-        return 0;
+    if (access(lFile, F_OK)) {
+        return;
     }
-    fptr = fopen(path, "r");
+    fptr = fopen(lFile, "r");
     if (fptr == NULL) {
-        return 0;
+        return;
     }
-    msg.lFile = lFile;
-    msg.rFile = rFile;
 
-    fpart = calloc(INPUT_MAX, sizeof(char));
-    if (fpart == NULL) {
-        return 0;
+    message = calloc(INPUT_MAX, sizeof(char));
+    fPart = calloc(INPUT_MAX, sizeof(char));
+    if (message == NULL || fPart == NULL) {
+        return;
     }
-    msg.action = 1;
-    if (send(sockFd, msg, sizeof(msg), 0) == -1) {
-        return -1;
-    }
-    while (fread(fpart, sizeof(char), INPUT_MAX, fptr) > 0) {
-        if (send(sockFd, fpart, INPUT_MAX, 0) == -1) {
-            return -1;
+
+    sprintf(message, "%s", "put");
+    send(sockFd, message, INPUT_MAX, 0);
+    recv(sockFd, message, INPUT_MAX, 0);
+    strcmp(message, "ready");
+    send(sockFd, rFile, INPUT_MAX, 0);
+    fseek(fptr, 0, SEEK_END);
+    fSize = ftell(fptr);
+    send(sockFd, &fSize, sizeof(fSize), 0);
+    recv(sockFd, message, INPUT_MAX, 0);
+    strcmp(message, "ready");
+
+    while (fread(fPart, sizeof(char), INPUT_MAX, fptr) > 0) {
+        if (send(sockFd, fPart, INPUT_MAX, 0) == -1) {
+            return;
         }
-        memset(fpart, 0, INPUT_MAX);
-    }
-    msg.action = 0;
-    if (send(sockFd, msg, sizeof(msg), 0) == -1) {
-        return -1;
+        memset(fPart, 0, INPUT_MAX);
     }
 
     fclose(fptr);
-    return 1;
+    return;
 }
 
 

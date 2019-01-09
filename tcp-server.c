@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <string.h>
 
 #include "x-sockets.h"
 
@@ -18,14 +19,6 @@
 #define PORT_MAX 40000
 
 #define INPUT_MAX 1000
-
-
-typedef struct message_t {
-    int action;
-    char* lFile;
-    char* rFile;
-    char* part;
-};
 
 
 int check_port(char* p) {
@@ -74,8 +67,37 @@ void handle_fault(int err) {
 }
 
 
-void put_file(int clientFd, char* path)  {
+void put_file(int clientFd)  {
+    char* message;
+    FILE* fptr;
+    char* fName;
+    long int fSize;
+    long int rSize;
 
+    message = calloc(INPUT_MAX, sizeof(char));
+    fName = calloc(INPUT_MAX, sizeof(char));
+    if (message == NULL || fName == NULL) {
+        return;
+    }
+
+    sprintf(message, "%s", "ready");
+    send(clientFd, message, INPUT_MAX, 0);
+    recv(clientFd, fName, INPUT_MAX, 0);
+    sprintf(message, "%s", "ready");
+    send(clientFd, message, INPUT_MAX, 0);
+    recv(clientFd, &fSize, sizeof(fSize), 0);
+
+    fptr = fopen(fName, "a");
+    if (fptr == NULL) {
+        return;
+    }
+    while (fSize > 0) {
+        rSize = recv(clientFd, message, INPUT_MAX, 0);
+        fSize -= rSize;
+        fwrite(message, sizeof(char), INPUT_MAX, fptr);
+    }
+
+    fclose(fptr);
 }
 
 
@@ -87,7 +109,7 @@ int main(int argc, char* argv[]) {
     int clientFd;
     struct sockaddr clientAddr;
     socklen_t clientLen;
-    message_t msg;
+    char* message;
     int qMax = 5;
 
     if (argc != 2) {
@@ -122,15 +144,16 @@ int main(int argc, char* argv[]) {
         handle_fault(7);
     }
 
-    if (buffer == NULL) {
+    message = calloc(INPUT_MAX, sizeof(char));
+    if (message == NULL) {
         handle_fault(2);
     }
     while (1) {
-        if (recv(clientFd, (void*) &msg, sizeof(msg)) == -1) {
+        if (recv(clientFd, message, INPUT_MAX, 0) == -1) {
             handle_fault(8);
         }
-        if (msg.action == 1) {
-            put_file(clientFd, msg.rFile);
+        if (strcmp(message, "put") == 0) {
+            put_file(clientFd);
         }
     }
 
