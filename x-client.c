@@ -102,6 +102,7 @@ void put_file(int sockFd, char* lFile, char* rFile) {
 
     fseek(fptr, 0, SEEK_END);
     fSize = ftell(fptr);
+    fseek(fptr, 0, SEEK_SET);
     send(sockFd, &fSize, sizeof(fSize), 0);
     recv(sockFd, message, INPUT_MAX, 0);
     strcmp(message, "ready");
