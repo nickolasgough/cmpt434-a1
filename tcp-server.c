@@ -33,40 +33,6 @@ int check_port(char* p) {
 }
 
 
-void handle_fault(int err) {
-    if (err == 1) {
-        printf("usage: tcp-server <port number>\n");
-        exit(err);
-    }
-    if (err == 2) {
-        printf("tcp-server: failed to allocate memory\n");
-        exit(err);
-    }
-    if (err == 3) {
-        printf("tcp-server: failed to determine hostname\n");
-        exit(err);
-    }
-    if (err == 4) {
-        printf("tcp-server: failed to open tcp socket\n");
-        exit(err);
-    }
-    if (err == 5) {
-        printf("tcp-server: failed to bind the socket\n");
-        exit(err);
-    }
-    if (err == 6) {
-        printf("tcp-server: failed to listen on the socket\n");
-        exit(err);
-    }
-    if (err == 7) {
-        printf("tcp-server: failed to accept a connection\n");
-    }
-    if (err == 8) {
-        printf("tcp-server: failed to receive on connection\n");
-    }
-}
-
-
 void put_file(int clientFd)  {
     char* message;
     FILE* fptr;
@@ -81,36 +47,66 @@ void put_file(int clientFd)  {
     }
 
     sprintf(message, "%s", "ready");
-    send(clientFd, message, INPUT_MAX, 0);
-    memset(message, 0, INPUT_MAX);
-
-    recv(clientFd, fName, INPUT_MAX, 0);
-
-    sprintf(message, "%s", "ready");
-    send(clientFd, message, INPUT_MAX, 0);
-    memset(message, 0, INPUT_MAX);
-
-    recv(clientFd, &fSize, sizeof(fSize), 0);
-
-    sprintf(message, "%s", "ready");
-    send(clientFd, message, INPUT_MAX, 0);
-    memset(message, 0, INPUT_MAX);
-
-    printf("Opening file %s with size %ld\n", fName, fSize);
-    fptr = fopen(fName, "a");
-    if (fptr == NULL) {
+    if (send(clientFd, message, INPUT_MAX, 0) == - 1) {
+        printf("tcp-server: failed to send put file name response\n");
         return;
     }
+    memset(message, 0, INPUT_MAX);
+
+    if (recv(clientFd, fName, INPUT_MAX, 0) == -1) {
+        printf("tcp-server: failed to receive put file name\n");
+        return;
+    }
+
+    sprintf(message, "%s", "ready");
+    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+        printf("tcp-server: failed to send put file size response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    if (recv(clientFd, &fSize, sizeof(fSize), 0) == -1) {
+        printf("tcp-server: failed to receive put file size response\n");
+        return;
+    }
+
+    if (!access(fName, F_OK)) {
+        printf("tcp-server: file %s already exists\n", fName);
+        sprintf(message, "%s", "error");
+        if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+            printf("tcp-server: failed to send file exists error\n");
+        }
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    sprintf(message, "%s", "ready");
+    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+        printf("tcp-server: failed to send put file contents response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    fptr = fopen(fName, "a");
+    if (fptr == NULL) {
+        printf("tcp-server: failed to create the file\n");
+        sprintf(message, "%s", "error");
+        if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+            printf("tcp-server: failed to send file creation error\n");
+        }
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    printf("tcp-server: receiving the file...\n");
     while (fSize > 0) {
         rSize = recv(clientFd, message, INPUT_MAX, 0);
-        printf("Receiving %s of size %ld\n", message, rSize);
         fwrite(message, sizeof(char), INPUT_MAX, fptr);
 
         memset(message, 0, INPUT_MAX);
         fSize -= rSize;
-        printf("Appended to the file\n");
     }
-    printf("Finished writing to the file\n");
+    printf("tcp-server: successfully received the file\n");
 
     fclose(fptr);
 }
@@ -121,54 +117,77 @@ int main(int argc, char* argv[]) {
     char* port;
     int sockFd;
     struct addrinfo sockInfo;
+
     int clientFd;
     struct sockaddr clientAddr;
     socklen_t clientLen;
+
     char* message;
+    int rResult;
     int qMax = 5;
 
     if (argc != 2) {
-        handle_fault(1);
+        printf("usage: ./tcp-server <port number>\n");
+        exit(1);
     }
+
     port = argv[1];
     if (!check_port(port)) {
-        handle_fault(1);
+        printf("tcp-server: port number must be between 30000 and 40000\n");
+        exit(1);
     }
 
     hName = calloc(INPUT_MAX, sizeof(char));
     if (hName == NULL) {
-        handle_fault(2);
+        printf("tcp-server: failed to allocate necessary memory\n");
+        exit(1);
     }
+
     if (gethostname(hName, INPUT_MAX) == -1) {
-        handle_fault(3);
+        printf("tcp-server: failed to determine the name of the machine\n");
+        exit(1);
     }
-
     if (!socket_tcp(&sockFd, &sockInfo, hName, port)) {
-        handle_fault(4);
-    }
-    if (bind(sockFd, sockInfo.ai_addr, sockInfo.ai_addrlen) == -1) {
-        handle_fault(5);
+        printf("tcp-server: failed to create tcp socket for given host\n");
+        exit(1);
     }
 
-    if (listen(sockFd, qMax) == -1) {
-        handle_fault(6);
+    if (bind(sockFd, sockInfo.ai_addr, sockInfo.ai_addrlen) == -1) {
+        printf("tcp-server: failed to bind tcp socket for given host\n");
+        exit(1);
     }
-    clientLen = sizeof(clientAddr);
-    clientFd = accept(sockFd, &clientAddr, &clientLen);
-    if (clientFd == -1) {
-        handle_fault(7);
+    if (listen(sockFd, qMax) == -1) {
+        printf("tcp-server: failed to listen tcp socket for given host\n");
+        exit(1);
     }
 
     message = calloc(INPUT_MAX, sizeof(char));
     if (message == NULL) {
-        handle_fault(2);
+        printf("tcp-server: failed to allocate necessary memory\n");
+        exit(1);
     }
+
     while (1) {
-        if (recv(clientFd, message, INPUT_MAX, 0) == -1) {
-            handle_fault(8);
+        clientLen = sizeof(clientAddr);
+        clientFd = accept(sockFd, &clientAddr, &clientLen);
+        if (clientFd == -1) {
+            printf("tcp-server: failed to accept incoming connection on socket\n");
+            exit(1);
         }
-        if (strcmp(message, "put") == 0) {
-            put_file(clientFd);
+
+        while (1) {
+            rResult = recv(clientFd, message, INPUT_MAX, 0);
+            if (rResult == 0) {
+                break;
+            }
+            if (rResult == -1) {
+                printf("tcp-server: failed to receive command from client\n");
+                exit(1);
+            }
+
+            if (strcmp(message, "put") == 0) {
+                put_file(clientFd);
+            }
         }
     }
 

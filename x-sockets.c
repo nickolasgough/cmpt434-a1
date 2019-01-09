@@ -36,12 +36,12 @@ int socket_tcp(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     
     status = getaddrinfo(hName, port, &hints, &pAi);
     if (status != 0) {
-        return -1;
+        return 0;
     }
     
     sockFd = socket(pAi->ai_family, pAi->ai_socktype, pAi->ai_protocol);
     if (sockFd < 0) {
-        return -1;
+        return 0;
     }
     
     *outFd = sockFd;

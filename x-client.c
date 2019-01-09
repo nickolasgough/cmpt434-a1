@@ -33,34 +33,6 @@ int check_port(char* p) {
     return 1;
 }
 
-void handle_fault(int err) {
-    if (err == 1) {
-        printf("usage: x-client <host name> <port number>\n");
-        exit(err);
-    }
-    if (err == 2) {
-        printf("x-client: failed to allocate memory\n");
-        exit(err);
-    }
-    if (err == 3) {
-        printf("x-client: failed to read command\n");
-    }
-    if (err == 4) {
-        printf("x-client: failed to put the file\n");
-    }
-    if (err == 5) {
-        printf("x-client: the file does not exist\n");
-    }
-    if (err == 6) {
-        printf("x-client: failed to open tcp socket\n");
-        exit(err);
-    }
-    if (err == 7) {
-        printf("x-client: failed to connect on socket\n");
-        exit(err);
-    }
-}
-
 
 void get_file(int sockFd, char* lFile, char* rFile) {
     printf("Getting file: %s, %s\n", lFile, rFile);
@@ -74,95 +46,134 @@ void put_file(int sockFd, char* lFile, char* rFile) {
     char* message;
 
     if (access(lFile, F_OK)) {
+        printf("x-client: file %s does not exist\n", lFile);
         return;
     }
+
     fptr = fopen(lFile, "r");
     if (fptr == NULL) {
+        printf("x-client: failed to open file %s", lFile);
         return;
     }
 
     message = calloc(INPUT_MAX, sizeof(char));
     fPart = calloc(INPUT_MAX, sizeof(char));
     if (message == NULL || fPart == NULL) {
+        printf("x-client: failed to allocate necessary memory\n");
         return;
     }
 
     sprintf(message, "%s", "put");
-    send(sockFd, message, INPUT_MAX, 0);
-    recv(sockFd, message, INPUT_MAX, 0);
-    strcmp(message, "ready");
+    if (send(sockFd, message, INPUT_MAX, 0) == -1) {
+        printf("x-client: failed to transmit the put command\n");
+        return;
+    }
+    if (recv(sockFd, message, INPUT_MAX, 0) == -1) {
+        printf("x-client: failed to receive put command response\n");
+        return;
+    }
+    if (strcmp(message, "ready") != 0) {
+        printf("x-client: received unexpected put command response\n");
+        return;
+    }
 
     memset(message, 0, INPUT_MAX);
 
-    send(sockFd, rFile, INPUT_MAX, 0);
-    recv(sockFd, message, INPUT_MAX, 0);
-    strcmp(message, "ready");
+    if (send(sockFd, rFile, INPUT_MAX, 0) == -1) {
+        printf("x-client: failed to transmit the file name\n");
+        return;
+    }
+    if (recv(sockFd, message, INPUT_MAX, 0) == -1) {
+        printf("x-client: failed to receive put file name response\n");
+        return;
+    }
+    if (strcmp(message, "ready") != 0) {
+        printf("x-client: received unexpected put file name response\n");
+        return;
+    }
 
     memset(message, 0, INPUT_MAX);
 
     fseek(fptr, 0, SEEK_END);
     fSize = ftell(fptr);
     fseek(fptr, 0, SEEK_SET);
-    send(sockFd, &fSize, sizeof(fSize), 0);
-    recv(sockFd, message, INPUT_MAX, 0);
-    strcmp(message, "ready");
+
+    if (send(sockFd, &fSize, sizeof(fSize), 0) == -1) {
+        printf("x-client: failed to transmit the file size\n");
+        return;
+    }
+    if (recv(sockFd, message, INPUT_MAX, 0) == -1) {
+        printf("x-client: failed to receive put file size response\n");
+        return;
+    }
+    if (strcmp(message, "ready") != 0) {
+        printf("x-client: received unexpected put file size response\n");
+        return;
+    }
 
     memset(message, 0, INPUT_MAX);
 
-    printf("Transmitting the file\n");
+    printf("x-client: transmitting the file...\n");
     while (fread(fPart, sizeof(char), INPUT_MAX, fptr) > 0) {
-        printf("Sending %s\n of size %ld", fPart, strlen(fPart));
         if (send(sockFd, fPart, INPUT_MAX, 0) == -1) {
-            printf("Failed to send\n");
+            printf("x-client: failed to put the whole file\n");
             return;
         }
+
         memset(fPart, 0, INPUT_MAX);
     }
-    printf("Finished sending the file\n");
+    printf("x-client: file successfully transmitted\n");
 
     fclose(fptr);
-    return;
 }
 
 
 int main(int argc, char* argv[]) {
     char cmd[INPUT_MAX];
-    char lFile[INPUT_MAX];
-    char rFile[INPUT_MAX];
+    char* lFile;
+    char* rFile;
     char* hName;
     char* port;
     int sockFd;
     struct addrinfo sockInfo;
 
     if (argc != 3) {
-        handle_fault(1);
+        printf("usage: ./x-client <host name> <port number>\n");
+        exit(1);
     }
 
     hName = argv[1];
     port = argv[2];
     if (!check_port(port)) {
-        handle_fault(1);
+        printf("x-client: port number must be between 30000 and 40000\n");
+        exit(1);
     }
 
     if (!socket_tcp(&sockFd, &sockInfo, hName, port)) {
-        handle_fault(6);
+        printf("x-client: failed to create tcp socket for given host\n");
+        exit(1);
     }
     if (connect(sockFd, sockInfo.ai_addr, sockInfo.ai_addrlen) == -1) {
-        handle_fault(7);
+        printf("x-client: failed to connect tcp socket for given host\n");
+        exit(1);
+    }
+
+    lFile = calloc(INPUT_MAX, sizeof(char));
+    rFile = calloc(INPUT_MAX, sizeof(char));
+    if (rFile == NULL || lFile == NULL) {
+        printf("x-client: failed to allocate necessary memory\n");
+        exit(1);
     }
 
     while (1) {
-        printf("x-client ? ");
-        if (scanf("%s", cmd) < 0) {
-            handle_fault(3);
-        }
+        printf("x-client? ");
+
+        scanf("%s", cmd);
         if (strcmp(cmd, "quit") == 0) {
             exit(0);
         }
-        if (scanf("%s %s", lFile, rFile) < 0) {
-            handle_fault(3);
-        }
-        
+
+        scanf("%s %s", lFile, rFile);
         if (strcmp(cmd, "get") == 0) {
             get_file(sockFd, lFile, rFile);
         }
