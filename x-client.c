@@ -108,6 +108,7 @@ void put_file(int sockFd, char* lFile, char* rFile) {
 
     memset(message, 0, INPUT_MAX);
 
+    printf("Transmitting the file\n");
     while (fread(fPart, sizeof(char), INPUT_MAX, fptr) > 0) {
         printf("Sending %s\n of size %ld", fPart, strlen(fPart));
         if (send(sockFd, fPart, INPUT_MAX, 0) == -1) {
