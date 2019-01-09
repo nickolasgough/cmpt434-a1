@@ -103,6 +103,7 @@ void put_file(int clientFd)  {
     }
     while (fSize > 0) {
         rSize = recv(clientFd, message, INPUT_MAX, 0);
+        printf("Receiving %s of size %ld\n", message, rSize);
         fwrite(message, sizeof(char), INPUT_MAX, fptr);
 
         memset(message, 0, INPUT_MAX);
