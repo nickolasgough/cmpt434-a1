@@ -13,12 +13,39 @@
 #include "x-common.h"
 
 
-void get_file(int clientFd, int serverFd) {
-    char* message;
-    char* fName;
+#define TEMP0 "temp0.txt"
+#define TEMP1 "temp1.txt"
+
+
+void proc_file(char* file, char* temp) {
     FILE* fPtr;
     FILE* tPtr;
     char c;
+
+    fPtr = fopen(file, "r");
+    tPtr = fopen(temp, "a");
+    if (fPtr == NULL || tPtr == NULL) {
+        printf("tcp-proxy: failed to process file\n");
+        return;
+    }
+
+    while (!feof(fPtr)) {
+        c = fgetc(fPtr);
+
+        fputc(c, tPtr);
+        if (c == 'c' || c == 'm' || c == 'p' || c == 't') {
+            fputc(c, tPtr);
+        }
+    }
+
+    fclose(fPtr);
+    fclose(tPtr);
+}
+
+
+void get_file(int clientFd, int serverFd) {
+    char* message;
+    char* fName;
 
     message = calloc(INPUT_MAX, sizeof(char));
     fName = calloc(INPUT_MAX, sizeof(char));
@@ -39,38 +66,65 @@ void get_file(int clientFd, int serverFd) {
         return;
     }
 
-    if (!tcp_client_get("tcp-proxy", serverFd, "file.txt", fName)) {
+    if (!tcp_client_get("tcp-proxy", serverFd, TEMP0, fName)) {
+        printf("tcp-proxy: failed to receive the file from the server\n");
         return;
     }
 
-    fPtr = fopen("file.txt", "r");
-    tPtr = fopen("temp.txt", "a");
-    if (fPtr == NULL) {
-        printf("tcp-proxy: failed to process file %s", fName);
-        return;
+    proc_file(TEMP0, TEMP1);
+
+    if (!tcp_file_transmit("tcp-proxy", clientFd, TEMP1)) {
+        printf("tcp-proxy: failed tp transmit the file to the client\n");
     }
 
-    while (!feof(fPtr)) {
-        c = fgetc(fPtr);
-
-        fputc(c, tPtr);
-        if (c == 'c' || c == 'm' || c == 'p' || c == 't') {
-            fputc(c, tPtr);
-        }
-    }
-
-    fclose(fPtr);
-    fclose(tPtr);
-
-    tcp_file_transmit("tcp-proxy", clientFd, "temp.txt", 0);
-
-    remove("file.txt");
-    remove("temp.txt");
+    remove(TEMP0);
+    remove(TEMP1);
 }
 
 
 void put_file(int clientFd, int serverFd) {
+    char* message;
+    char* fName;
 
+    message = calloc(INPUT_MAX, sizeof(char));
+    fName = calloc(INPUT_MAX, sizeof(char));
+    if (message == NULL || fName == NULL) {
+        printf("tcp-proxy: failed to allocate necessary memory\n");
+        return;
+    }
+
+    sprintf(message, "%s", "ready");
+    if (send(clientFd, message, INPUT_MAX, 0) == - 1) {
+        printf("tcp-proxy: failed to send put file name response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    if (recv(clientFd, fName, INPUT_MAX, 0) == -1) {
+        printf("tcp-proxy: failed to receive put file name\n");
+        return;
+    }
+
+    sprintf(message, "%s", "ready");
+    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+        printf("tcp-proxy: failed to send put file size response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    if (!tcp_file_receive("tcp-proxy", serverFd, TEMP0)) {
+        printf("tcp-proxy: failed to receive the file from the server\n");
+        return;
+    }
+
+    proc_file(TEMP0, TEMP1);
+
+    if (!tcp_client_put("tcp-proxy", serverFd, TEMP1, fName)) {
+        printf("tcp-proxy: failed to transmit the file to the server\n");
+    }
+
+    remove(TEMP0);
+    remove(TEMP1);
 }
 
 
