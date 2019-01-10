@@ -39,11 +39,11 @@ void get_file(int clientFd, int serverFd) {
         return;
     }
 
-    if (!tcp_client_get("tcp-proxy", serverFd, fName, 0)) {
+    if (!tcp_client_get("tcp-proxy", serverFd, "file.txt", fName)) {
         return;
     }
 
-    fPtr = fopen(fName, "r");
+    fPtr = fopen("file.txt", "r");
     tPtr = fopen("temp.txt", "a");
     if (fPtr == NULL) {
         printf("tcp-proxy: failed to process file %s", fName);
@@ -60,6 +60,12 @@ void get_file(int clientFd, int serverFd) {
     }
 
     tcp_file_transmit("tcp-proxy", clientFd, "temp.txt", 0);
+
+    fclose(fPtr);
+    fclose(tPtr);
+
+    remove("file.txt");
+    remove("temp.txt");
 }
 
 
