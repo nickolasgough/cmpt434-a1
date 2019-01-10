@@ -227,6 +227,10 @@ int tcp_file_receive(char* prog, int serverFd, char* lFile) {
     printf("%s: receiving the file...\n", prog);
     while (fSize > 0) {
         rSize = recv(serverFd, message, INPUT_MAX, 0);
+        if (rSize == -1) {
+            printf("%s: failed to receive the whole file\n", prog);
+            return 0;
+        }
         fwrite(message, sizeof(char), INPUT_MAX, fPtr);
 
         memset(message, 0, INPUT_MAX);
@@ -273,7 +277,7 @@ int tcp_file_transmit(char* prog, int clientFd, char* fName) {
     fseek(fPtr, 0, SEEK_SET);
 
     if (send(clientFd, &fSize, sizeof(fSize), 0) == -1) {
-        printf("%s: failed to transmit file size\n", prog);
+        printf("%s: failed to send file size\n", prog);
         return 0;
     }
     if (recv(clientFd, message, INPUT_MAX, 0) == -1) {
@@ -289,7 +293,7 @@ int tcp_file_transmit(char* prog, int clientFd, char* fName) {
     printf("%s: transmitting the file...\n", prog);
     while (fread(message, sizeof(char), INPUT_MAX, fPtr) > 0) {
         if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-            printf("%s: failed to get the whole file\n", prog);
+            printf("%s: failed to transmit the whole file\n", prog);
             return 0;
         }
 
