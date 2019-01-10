@@ -59,10 +59,10 @@ void get_file(int clientFd, int serverFd) {
         }
     }
 
-    tcp_file_transmit("tcp-proxy", clientFd, "temp.txt", 0);
-
     fclose(fPtr);
     fclose(tPtr);
+
+    tcp_file_transmit("tcp-proxy", clientFd, "temp.txt", 0);
 
     remove("file.txt");
     remove("temp.txt");
