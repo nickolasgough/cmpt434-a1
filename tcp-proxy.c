@@ -10,80 +10,56 @@
 #include <string.h>
 
 #include "x-sockets.h"
+#include "x-common.h"
 
 
 void get_file(int clientFd, int serverFd) {
     char* message;
-    FILE* f0Ptr;
-    FILE* f1Ptr;
-    long int fSize;
-    long int rSize;
-
-    f0Ptr = fopen("temp0.txt", "a");
-    if (f0Ptr == NULL) {
-        printf("tcp-server: failed to create file %s", lFile);
-        return;
-    }
+    char* fName;
+    FILE* fPtr;
+    FILE* tPtr;
+    char c;
 
     message = calloc(INPUT_MAX, sizeof(char));
-    if (message == NULL) {
-        printf("tcp-server: failed to allocate necessary memory\n");
-        return;
-    }
-
-    sprintf(message, "%s", "get");
-    if (send(serverFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-server: failed to transmit the get command\n");
-        return;
-    }
-    if (recv(serverFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-server: failed to receive get command response\n");
-        return;
-    }
-    if (strcmp(message, "ready") != 0) {
-        printf("tcp-server: received unexpected get command response\n");
-        return;
-    }
-    memset(message, 0, INPUT_MAX);
-
-    if (send(serverFd, rFile, INPUT_MAX, 0) == -1) {
-        printf("tcp-server: failed to transmit the get file name\n");
-        return;
-    }
-    if (recv(serverFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-server: failed to receive get file name response\n");
-        return;
-    }
-    if (strcmp(message, "ready") != 0) {
-        printf("tcp-server: received unexpected get file name response\n");
-        return;
-    }
-    memset(message, 0, INPUT_MAX);
-
-    if (recv(serverFd, &fSize, sizeof(fSize), 0) == -1) {
-        printf("tcp-server: failed to receive the file size\n");
+    fName = calloc(INPUT_MAX, sizeof(char));
+    if (message == NULL || fName == NULL) {
+        printf("tcp-proxy: failed to allocate necessary memory\n");
         return;
     }
 
     sprintf(message, "%s", "ready");
-    if (send(serverFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-server: failed to send get file size response\n");
+    if (send(clientFd, message, INPUT_MAX, 0) == - 1) {
+        printf("tcp-proxy: failed to send get file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
-    printf("tcp-server: receiving the file...\n");
-    while (fSize > 0) {
-        rSize = recv(serverFd, message, INPUT_MAX, 0);
-        fwrite(message, sizeof(char), INPUT_MAX, f0Ptr);
-
-        memset(message, 0, INPUT_MAX);
-        fSize -= rSize;
+    if (recv(clientFd, fName, INPUT_MAX, 0) == -1) {
+        printf("tcp-proxy: failed to receive get file name\n");
+        return;
     }
-    printf("tcp-server: file successfully received\n");
 
-    fclose(f0Ptr);
-    fclose(f1Ptr);
+    if (!tcp_client_get("tcp-proxy", serverFd, fName, 0)) {
+        return;
+    }
+
+    fPtr = fopen(fName, "r");
+    tPtr = fopen("temp.txt", "a");
+    if (fPtr == NULL) {
+        printf("tcp-proxy: failed to process file %s", fName);
+        return;
+    }
+
+    while (!feof(fPtr)) {
+        c = fgetc(fPtr);
+
+        fputc(c, tPtr);
+        if (c == 'c' || c == 'm' || c == 'p' || c == 't') {
+            fputc(c, tPtr);
+        }
+    }
+
+    tcp_file_transmit("tcp-proxy", clientFd, "temp.txt", 0);
 }
 
 
@@ -93,7 +69,7 @@ void put_file(int clientFd, int serverFd) {
 
 
 int main(int argc, char* argv[]) {
-    char cmd;
+    char* cmd;
     char* lFile;
     char* rFile;
     char* hName;
@@ -107,6 +83,8 @@ int main(int argc, char* argv[]) {
     int clientFd;
     struct sockaddr clientAddr;
     socklen_t clientLen;
+    int rResult;
+    int qMax = 1;
 
     if (argc != 4) {
         printf("usage: ./tcp-proxy <host port> <server name> <server port>\n");
@@ -118,6 +96,12 @@ int main(int argc, char* argv[]) {
     sPort = argv[3];
     if (!check_port(hPort) || !check_port(sPort)) {
         printf("tcp-proxy: port number must be between 30000 and 40000\n");
+        exit(1);
+    }
+
+    hName = calloc(INPUT_MAX, sizeof(char));
+    if (hName == NULL) {
+        printf("tcp-proxy: failed to allocate necessary memory\n");
         exit(1);
     }
 
@@ -165,7 +149,7 @@ int main(int argc, char* argv[]) {
         }
 
         while (1) {
-            rResult = recv(clientFd, message, INPUT_MAX, 0);
+            rResult = recv(clientFd, cmd, INPUT_MAX, 0);
             if (rResult == 0) {
                 break;
             }
@@ -174,15 +158,16 @@ int main(int argc, char* argv[]) {
                 exit(1);
             }
 
-            if (strcmp(message, "get") == 0) {
+            if (strcmp(cmd, "get") == 0) {
                 get_file(clientFd, serverFd);
             }
-            if (strcmp(message, "put") == 0) {
+            if (strcmp(cmd, "put") == 0) {
                 put_file(clientFd, serverFd);
             }
         }
     }
 
+    close(hostFd);
     close(clientFd);
     close(serverFd);
     exit(0);

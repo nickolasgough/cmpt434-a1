@@ -27,19 +27,10 @@ int check_port(char* port) {
 
 int tcp_client_get(char* prog, int serverFd, char* lFile, char* rFile) {
     char* message;
-    FILE* fPtr;
-    long int fSize;
-    long int rSize;
 
     message = calloc(INPUT_MAX, sizeof(char));
     if (message == NULL) {
         printf("%s: failed to allocate necessary memory\n", prog);
-        return 0;
-    }
-
-    fPtr = fopen(lFile, "a");
-    if (fPtr == NULL) {
-        printf("%s: failed to create file %s", lFile, prog);
         return 0;
     }
 
@@ -71,6 +62,28 @@ int tcp_client_get(char* prog, int serverFd, char* lFile, char* rFile) {
         return 0;
     }
     memset(message, 0, INPUT_MAX);
+
+    return tcp_file_receive(prog, serverFd, lFile, rFile);
+}
+
+
+int tcp_file_receive(char* prog, int serverFd, char* lFile, char* rFile) {
+    char* message;
+    FILE* fPtr;
+    long int fSize;
+    long int rSize;
+
+    message = calloc(INPUT_MAX, sizeof(char));
+    if (message == NULL) {
+        printf("%s: failed to allocate necessary memory\n", prog);
+        return 0;
+    }
+
+    fPtr = fopen(lFile, "a");
+    if (fPtr == NULL) {
+        printf("%s: failed to create file %s", lFile, prog);
+        return 0;
+    }
 
     if (recv(serverFd, &fSize, sizeof(fSize), 0) == -1) {
         printf("%s: failed to receive the file size\n", prog);
@@ -181,8 +194,6 @@ int tcp_client_put(char* prog, int serverFd, char* lFile, char* rFile) {
 
 int tcp_server_get(char* prog, int clientFd, char* fName, int eCheck) {
     char* message;
-    FILE* fPtr;
-    long int fSize;
 
     message = calloc(INPUT_MAX, sizeof(char));
     fName = calloc(INPUT_MAX, sizeof(char));
@@ -211,6 +222,21 @@ int tcp_server_get(char* prog, int clientFd, char* fName, int eCheck) {
         return 0;
     }
     memset(message, 0, INPUT_MAX);
+
+    return tcp_file_transmit(prog, clientFd, fName, eCheck);
+}
+
+
+int tcp_file_transmit(char* prog, int clientFd, char* fName, int eCheck) {
+    char* message;
+    FILE* fPtr;
+    long int fSize;
+
+    message = calloc(INPUT_MAX, sizeof(char));
+    if (message == NULL) {
+        printf("%s: failed to allocate necessary memory\n", prog);
+        return 0;
+    }
 
     fPtr = fopen(fName, "r");
     if (fPtr == NULL) {
@@ -273,6 +299,7 @@ int tcp_server_put(char* prog, int clientFd, char* fName, int eCheck) {
     message = calloc(INPUT_MAX, sizeof(char));
     fName = calloc(INPUT_MAX, sizeof(char));
     if (message == NULL || fName == NULL) {
+        printf("%s: failed to allocate necessary memory\n", prog);
         return 0;
     }
 

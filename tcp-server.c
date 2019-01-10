@@ -104,6 +104,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    close(clientFd);
     close(sockFd);
     exit(0);
 }
