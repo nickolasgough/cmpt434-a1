@@ -202,11 +202,9 @@ int main(int argc, char* argv[]) {
     char* port;
     int sockFd;
     struct addrinfo sockInfo;
-
     int clientFd;
     struct sockaddr clientAddr;
     socklen_t clientLen;
-
     char* message;
     int rResult;
     int qMax = 5;
@@ -279,5 +277,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    close(sockFd);
     exit(0);
 }

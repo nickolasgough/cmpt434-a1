@@ -11,7 +11,6 @@
 #include <string.h>
 
 #include "x-sockets.h"
-#include "x-files.h"
 
 
 #define STD_IN 0
@@ -197,7 +196,7 @@ void put_file(int sockFd, char* lFile, char* rFile) {
 
 
 int main(int argc, char* argv[]) {
-    char cmd[INPUT_MAX];
+    char cmd;
     char* lFile;
     char* rFile;
     char* hName;
@@ -226,9 +225,10 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    cmd = calloc(INPUT_MAX, sizeof(char));
     lFile = calloc(INPUT_MAX, sizeof(char));
     rFile = calloc(INPUT_MAX, sizeof(char));
-    if (rFile == NULL || lFile == NULL) {
+    if (cmd == NULL || rFile == NULL || lFile == NULL) {
         printf("x-client: failed to allocate necessary memory\n");
         exit(1);
     }
