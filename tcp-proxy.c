@@ -12,123 +12,78 @@
 #include "x-sockets.h"
 
 
-void handle_fault(char* errMsg, int recFd) {
+void get_file(int clientFd, int serverFd) {
     char* message;
+    FILE* f0Ptr;
+    FILE* f1Ptr;
+    long int fSize;
+    long int rSize;
 
-    message = calloc(INPUT_MAX, sizeof(char));
-    if (message == NULL) {
-        printf("tcp-proxy: failed to allocate necessary memory\n");
+    f0Ptr = fopen("temp0.txt", "a");
+    if (f0Ptr == NULL) {
+        printf("tcp-server: failed to create file %s", lFile);
         return;
     }
 
-    printf("%s", errMsg);
-    sprintf(message, "%s", "error");
-    if (send(recFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-server: failed to transmit proxy error\n");
-    }
-}
-
-
-void get_file(int clientFd, int serverFd) {
-    char* message;
-    FILE* fPtr;
-    char* fName;
-    long int fSize;
-    long int rSize;
-    int n;
-
     message = calloc(INPUT_MAX, sizeof(char));
-    fName = calloc(INPUT_MAX, sizeof(char));
-    if (message == NULL || fName == NULL) {
+    if (message == NULL) {
+        printf("tcp-server: failed to allocate necessary memory\n");
         return;
     }
 
     sprintf(message, "%s", "get");
     if (send(serverFd, message, INPUT_MAX, 0) == -1) {
-        handle_fault("tcp-proxy: failed to transmit the get command\n", clientFd);
+        printf("tcp-server: failed to transmit the get command\n");
         return;
     }
     if (recv(serverFd, message, INPUT_MAX, 0) == -1) {
-        handle_fault("tcp-proxy: failed to receive get command response\n", clientFd);
+        printf("tcp-server: failed to receive get command response\n");
         return;
     }
     if (strcmp(message, "ready") != 0) {
-        handle_fault("tcp-proxy: received unexpected get command response\n", clientFd);
+        printf("tcp-server: received unexpected get command response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
-    sprintf(message, "%s", "ready");
-    if (send(clientFd, message, INPUT_MAX, 0) == - 1) {
-        handle_fault("tcp-proxy: failed to send get file name response\n", serverFd);
-        return;
-    }
-    memset(message, 0, INPUT_MAX);
-
-    if (recv(clientFd, fName, INPUT_MAX, 0) == -1) {
-        handle_fault("tcp-proxy: failed to receive get file name\n", serverFd);
-        return;
-    }
-
-    if (send(serverFd, fName, INPUT_MAX, 0) == -1) {
-        handle_fault("tcp-proxy: failed to transmit the get file name\n", clientFd);
+    if (send(serverFd, rFile, INPUT_MAX, 0) == -1) {
+        printf("tcp-server: failed to transmit the get file name\n");
         return;
     }
     if (recv(serverFd, message, INPUT_MAX, 0) == -1) {
-        handle_fault("tcp-proxy: failed to receive get file name response\n", clientFd);
+        printf("tcp-server: failed to receive get file name response\n");
         return;
     }
     if (strcmp(message, "ready") != 0) {
-        handle_fault("tcp-proxy: received unexpected get file name response\n", clientFd);
-        return;
-    }
-    memset(message, 0, INPUT_MAX);
-
-    sprintf(message, "%s", "ready");
-    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-        handle_fault("tcp-proxy: failed to send get file size response\n", serverFd);
+        printf("tcp-server: received unexpected get file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
     if (recv(serverFd, &fSize, sizeof(fSize), 0) == -1) {
-        handle_fault("x-client: failed to receive the file size\n", clientFd);
+        printf("tcp-server: failed to receive the file size\n");
         return;
     }
 
-    if (send(clientFd, &fSize, sizeof(fSize), 0) == -1) {
-        handle_fault("tcp-proxy: failed to transmit the file size\n", serverFd);
-        return;
-    }
-    if (recv(clientFd, message, INPUT_MAX, 0) == -1) {
-        handle_fault("tcp-proxy: failed to receive get file size response\n", serverFd);
-        return;
-    }
-    if (strcmp(message, "ready") != 0) {
-        handle_fault("tcp-proxy: received unexpected get file size response\n", serverFd);
+    sprintf(message, "%s", "ready");
+    if (send(serverFd, message, INPUT_MAX, 0) == -1) {
+        printf("tcp-server: failed to send get file size response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
-    printf("tcp-proxy: proxying the file...\n");
+    printf("tcp-server: receiving the file...\n");
     while (fSize > 0) {
         rSize = recv(serverFd, message, INPUT_MAX, 0);
-        if (rSize == -1) {
-            handle_fault("tcp-proxy: failed to proxy the entire file\n", clientFd);
-            return;
-        }
-        for (n = 0; n < )
-        if (send(client, message, INPUT_MAX, 0) == -1) {
-            handle_fault("tcp-proxy: failed to proxy the entire file\n", clientFd);
-            return;
-        }
+        fwrite(message, sizeof(char), INPUT_MAX, f0Ptr);
 
         memset(message, 0, INPUT_MAX);
         fSize -= rSize;
     }
-    printf("tcp-proxy: file successfully proxied\n");
+    printf("tcp-server: file successfully received\n");
 
-    fclose(fPtr);
+    fclose(f0Ptr);
+    fclose(f1Ptr);
 }
 
 
