@@ -112,8 +112,8 @@ void put_file(int clientFd, int serverFd) {
     }
     memset(message, 0, INPUT_MAX);
 
-    if (!tcp_file_receive("tcp-proxy", serverFd, TEMP0)) {
-        printf("tcp-proxy: failed to receive the file from the server\n");
+    if (!tcp_file_receive("tcp-proxy", clientFd, TEMP0)) {
+        printf("tcp-proxy: failed to receive the file from the client\n");
         return;
     }
 
