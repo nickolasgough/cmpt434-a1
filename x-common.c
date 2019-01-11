@@ -147,6 +147,13 @@ int tcp_server_get(char* prog, int clientFd, char* fName, int eCheck) {
     }
     memset(message, 0, INPUT_MAX);
 
+    sprintf(message, "%s", "ready");
+    if (send(clientFd, message, INPUT_MAX, 0) == - 1) {
+        printf("%s: failed to send get file name response\n", prog);
+        return 0;
+    }
+    memset(message, 0, INPUT_MAX);
+
     return tcp_file_transmit(prog, clientFd, fName);
 }
 
