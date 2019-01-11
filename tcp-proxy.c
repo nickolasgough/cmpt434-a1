@@ -68,6 +68,10 @@ void get_file(int clientFd, int serverFd) {
 
     if (!tcp_client_get("tcp-proxy", serverFd, TEMP0, fName)) {
         printf("tcp-proxy: failed to receive the file from the server\n");
+        sprintf(message, "%s", "error");
+        if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+            printf("tcp-proxy: failed to send proxy interruption error\n");
+        }
         return;
     }
 
@@ -121,6 +125,10 @@ void put_file(int clientFd, int serverFd) {
 
     if (!tcp_file_receive("tcp-proxy", clientFd, TEMP0)) {
         printf("tcp-proxy: failed to receive the file from the client\n");
+        sprintf(message, "%s", "error");
+        if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+            printf("tcp-proxy: failed to send proxy interruption error\n");
+        }
         return;
     }
 
