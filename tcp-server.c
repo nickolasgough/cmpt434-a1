@@ -15,12 +15,89 @@
 
 
 void get_file(int clientFd) {
-    tcp_server_get("tcp-server", clientFd, NULL, 1);
+    char* message;
+    char* fName;
+
+    message = calloc(INPUT_MAX, sizeof(char));
+    fName = calloc(INPUT_MAX, sizeof(char));
+    if (message == NULL || fName == NULL) {
+        return;
+    }
+
+    sprintf(message, "%s", "ready");
+    if (send(clientFd, message, INPUT_MAX, 0) == - 1) {
+        printf("tcp-server: failed to send get file name response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    if (recv(clientFd, fName, INPUT_MAX, 0) == -1) {
+        printf("tcp-server: failed to receive get file name\n");
+        return;
+    }
+
+    if (access(fName, F_OK)) {
+        printf("tcp-server: file %s does not exist\n", fName);
+        sprintf(message, "%s", "error");
+        if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+            printf("tcp-server: failed to send file does not exist error\n");
+        }
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    sprintf(message, "%s", "ready");
+    if (send(clientFd, message, INPUT_MAX, 0) == - 1) {
+        printf("tcp-server: failed to send get file name response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    tcp_file_transmit("tcp-server", clientFd, fName);
 }
 
 
 void put_file(int clientFd)  {
-    tcp_server_put("tcp-server", clientFd, NULL, 1);
+    char* message;
+    char* fName;
+
+    message = calloc(INPUT_MAX, sizeof(char));
+    fName = calloc(INPUT_MAX, sizeof(char));
+    if (message == NULL || fName == NULL) {
+        printf("tcp-server: failed to allocate necessary memory\n");
+        return;
+    }
+
+    sprintf(message, "%s", "ready");
+    if (send(clientFd, message, INPUT_MAX, 0) == - 1) {
+        printf("tcp-server: failed to send put file name response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    if (recv(clientFd, fName, INPUT_MAX, 0) == -1) {
+        printf("tcp-server: failed to receive put file name\n");
+        return;
+    }
+
+    if (!access(fName, F_OK)) {
+        printf("tcp-server: file %s already exists\n", fName);
+        sprintf(message, "%s", "error");
+        if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+            printf("tcp-server: failed to send file exists error\n");
+        }
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    sprintf(message, "%s", "ready");
+    if (send(clientFd, message, INPUT_MAX, 0) == - 1) {
+        printf("tcp-server: failed to send put file name response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    tcp_file_receive("tcp-server", clientFd, fName);
 }
 
 

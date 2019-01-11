@@ -11,11 +11,5 @@
 
 int check_port(char* port);
 
-int tcp_client_get(char* prog, int serverFd, char* lFile, char* rFile);
-int tcp_client_put(char* prog, int serverFd, char* lFile, char* rFile);
-
-int tcp_server_get(char* prog, int clientFd, char* fName, int eCheck);
-int tcp_server_put(char* prog, int clientFd, char* fName, int eCheck);
-
 int tcp_file_receive(char* prog, int serverFd, char* lFile);
 int tcp_file_transmit(char* prog, int clientFd, char* fName);
