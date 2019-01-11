@@ -25,7 +25,7 @@ int check_port(char* port) {
 }
 
 
-int tcp_file_receive(char* prog, int serverFd, char* lFile) {
+int tcp_file_receive(char* prog, int serverFd, char* fName) {
     char* message;
     FILE* fPtr;
     long int fSize;
@@ -37,9 +37,9 @@ int tcp_file_receive(char* prog, int serverFd, char* lFile) {
         return 0;
     }
 
-    fPtr = fopen(lFile, "a");
+    fPtr = fopen(fName, "a");
     if (fPtr == NULL) {
-        printf("%s: failed to create file %s", lFile, prog);
+        printf("%s: failed to create file %s", fName, prog);
         return 0;
     }
 
@@ -126,5 +126,99 @@ int tcp_file_transmit(char* prog, int clientFd, char* fName) {
     printf("%s: file successfully transmitted\n", prog);
 
     fclose(fPtr);
+    return 1;
+}
+
+
+int tcp_array_receive(char* prog, int serverFd, char* fDest) {
+    char* message;
+    long int fSize;
+    long int rSize;
+    long int cPos;
+
+    message = calloc(INPUT_MAX, sizeof(char));
+    if (message == NULL) {
+        printf("%s: failed to allocate necessary memory\n", prog);
+        return 0;
+    }
+
+    if (recv(serverFd, &fSize, sizeof(fSize), 0) == -1) {
+        printf("%s: failed to receive file size\n", prog);
+        return 0;
+    }
+
+    fDest = calloc(fSize, sizeof(char));
+    if (fDest == NULL) {
+        printf("%s: failed to allocate necessary memory\n", prog);
+        return 0;
+    }
+
+    sprintf(message, "%s", "ready");
+    if (send(serverFd, message, INPUT_MAX, 0) == -1) {
+        printf("%s: failed to send file size response\n", prog);
+        return 0;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    printf("%s: receiving the file...\n", prog);
+    cPos = 0;
+    while (fSize > 0) {
+        rSize = recv(serverFd, &fDest[cPos], fSize, 0);
+        if (rSize == -1) {
+            printf("%s: failed to receive the whole file\n", prog);
+            return 0;
+        }
+
+        fSize -= rSize;
+        cPos += rSize;
+    }
+    printf("%s: file successfully received\n", prog);
+
+    return 1;
+}
+
+
+int tcp_array_transmit(char* prog, int clientFd, char* fDest) {
+    char* message;
+    long int fSize;
+    long int sSize;
+    long int cPos;
+
+    message = calloc(INPUT_MAX, sizeof(char));
+    if (message == NULL) {
+        printf("%s: failed to allocate necessary memory\n", prog);
+        return 0;
+    }
+
+    fSize = strlen(fDest);
+
+    if (send(clientFd, &fSize, sizeof(fSize), 0) == -1) {
+        printf("%s: failed to send file size\n", prog);
+        return 0;
+    }
+    if (recv(clientFd, message, INPUT_MAX, 0) == -1) {
+        printf("%s: failed to receive file size response\n", prog);
+        return 0;
+    }
+    if (strcmp(message, "ready") != 0) {
+        printf("%s: received unexpected file size response\n", prog);
+        return 0;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    printf("%s: transmitting the file...\n", prog);
+    cPos = 0;
+    while (fSize > 0) {
+        sSize = send(clientFd, &fDest[cPos], INPUT_MAX, 0);
+        if (sSize == -1) {
+            printf("%s: failed to transmit the whole file\n", prog);
+            return 0;
+        }
+
+        fSize -= sSize;
+        cPos += sSize;
+    }
+    printf("%s: file successfully transmitted\n", prog);
+
     return 1;
 }

@@ -17,35 +17,41 @@
 #define TEMP1 "temp1.txt"
 
 
-void proc_file(char* file, char* temp) {
-    FILE* fPtr;
-    FILE* tPtr;
+int proc_file(char* fDest, char* tDest) {
+    long int fSize;
+    long int fIndex;
+    long int tIndex;
     char c;
 
-    fPtr = fopen(file, "r");
-    tPtr = fopen(temp, "a");
-    if (fPtr == NULL || tPtr == NULL) {
-        printf("tcp-proxy: failed to process file\n");
-        return;
+    fSize = strlen(fDest);
+    tDest = calloc(2 * fSize, sizeof(char));
+    if (tDest == NULL) {
+        return 0;
     }
 
-    while (!feof(fPtr)) {
-        c = fgetc(fPtr);
+    fIndex = 0;
+    tIndex = 0;
+    while (fIndex < fSize) {
+        c = fDest[fIndex];
+        tDest[tIndex] = c;
+        fIndex += 1;
+        tIndex += 1;
 
-        fputc(c, tPtr);
         if (c == 'c' || c == 'm' || c == 'p' || c == 't') {
-            fputc(c, tPtr);
+            tDest[tIndex] = c;
+            tIndex += 1;
         }
     }
 
-    fclose(fPtr);
-    fclose(tPtr);
+    return 1;
 }
 
 
 void get_file(int clientFd, int serverFd) {
     char* message;
-    char* fName;
+    char* fName = NULL;
+    char* fDest = NULL;
+    char* tDest = NULL;
 
     message = calloc(INPUT_MAX, sizeof(char));
     fName = calloc(INPUT_MAX, sizeof(char));
@@ -54,6 +60,7 @@ void get_file(int clientFd, int serverFd) {
         return;
     }
 
+    /* Initiate request with client */
     sprintf(message, "%s", "ready");
     if (send(clientFd, message, INPUT_MAX, 0) == - 1) {
         printf("tcp-proxy: failed to send get file name response\n");
@@ -66,7 +73,38 @@ void get_file(int clientFd, int serverFd) {
         return;
     }
 
-    if (!tcp_client_get("tcp-proxy", serverFd, TEMP0, fName)) {
+    /* Initiate request with server */
+    sprintf(message, "%s", "get");
+    if (send(serverFd, message, INPUT_MAX, 0) == -1) {
+        printf("x-client: failed to transmit the get command\n");
+        return;
+    }
+    if (recv(serverFd, message, INPUT_MAX, 0) == -1) {
+        printf("x-client: failed to receive get command response\n");
+        return;
+    }
+    if (strcmp(message, "ready") != 0) {
+        printf("x-client: received unexpected get command response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    if (send(serverFd, fName, INPUT_MAX, 0) == -1) {
+        printf("x-client: failed to transmit the get file name\n");
+        return;
+    }
+    if (recv(serverFd, message, INPUT_MAX, 0) == -1) {
+        printf("x-client: failed to receive get file name response\n");
+        return;
+    }
+    if (strcmp(message, "ready") != 0) {
+        printf("x-client: received unexpected get file name response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    /* Receive file contents from server */
+    if (!tcp_array_receive("tcp-proxy", serverFd, fDest)) {
         printf("tcp-proxy: failed to receive the file from the server\n");
         sprintf(message, "%s", "error");
         if (send(clientFd, message, INPUT_MAX, 0) == -1) {
@@ -75,28 +113,44 @@ void get_file(int clientFd, int serverFd) {
         return;
     }
 
-    proc_file(TEMP0, TEMP1);
+    /* Process the given file */
+    if (!proc_file(fDest, tDest)) {
+        printf("tcp-proxy: failed to process the given file\n");
+        sprintf(message, "%s", "error");
+        if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+            printf("tcp-proxy: failed to send proxy interruption error\n");
+        }
+        return;
+    }
 
+    /* Send file contents to client */
     sprintf(message, "%s", "ready");
-    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to send file size response\n");
+    if (send(clientFd, message, INPUT_MAX, 0) == - 1) {
+        printf("tcp-proxy: failed to send get file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
-    if (!tcp_file_transmit("tcp-proxy", clientFd, TEMP1)) {
+    if (!tcp_array_transmit("tcp-proxy", clientFd, tDest)) {
         printf("tcp-proxy: failed tp transmit the file to the client\n");
     }
-
-    remove(TEMP0);
-    remove(TEMP1);
 }
 
 
 void put_file(int clientFd, int serverFd) {
     char* message;
-    char* fName;
+    char* fName = NULL;
+    char* fDest = NULL;
+    char* tDest = NULL;
 
+    message = calloc(INPUT_MAX, sizeof(char));
+    fName = calloc(INPUT_MAX, sizeof(char));
+    if (message == NULL || fName == NULL) {
+        printf("tcp-proxy: failed to allocate necessary memory\n");
+        return;
+    }
+
+    /* Initiate request with client */
     message = calloc(INPUT_MAX, sizeof(char));
     fName = calloc(INPUT_MAX, sizeof(char));
     if (message == NULL || fName == NULL) {
@@ -117,14 +171,21 @@ void put_file(int clientFd, int serverFd) {
     }
 
     sprintf(message, "%s", "ready");
-    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to send put file size response\n");
+    if (send(clientFd, message, INPUT_MAX, 0) == - 1) {
+        printf("tcp-proxy: failed to send put file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
-    if (!tcp_file_receive("tcp-proxy", clientFd, TEMP0)) {
+    /* Receive file contents from client */
+    if (!tcp_array_receive("tcp-proxy", clientFd, fDest)) {
         printf("tcp-proxy: failed to receive the file from the client\n");
+        return;
+    }
+
+    /* Process given file contents */
+    if (!proc_file(fDest, tDest)) {
+        printf("tcp-proxy: failed to process the given file\n");
         sprintf(message, "%s", "error");
         if (send(clientFd, message, INPUT_MAX, 0) == -1) {
             printf("tcp-proxy: failed to send proxy interruption error\n");
@@ -132,14 +193,9 @@ void put_file(int clientFd, int serverFd) {
         return;
     }
 
-    proc_file(TEMP0, TEMP1);
-
-    if (!tcp_client_put("tcp-proxy", serverFd, TEMP1, fName)) {
-        printf("tcp-proxy: failed to transmit the file to the server\n");
+    if (!tcp_array_transmit("tcp-proxy", serverFd, tDest)) {
+        printf("tcp-proxy: failed tp transmit the file to the client\n");
     }
-
-    remove(TEMP0);
-    remove(TEMP1);
 }
 
 
