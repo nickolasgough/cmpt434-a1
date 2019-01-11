@@ -265,13 +265,6 @@ int tcp_file_transmit(char* prog, int clientFd, char* fName) {
     }
     memset(message, 0, INPUT_MAX);
 
-    sprintf(message, "%s", "ready");
-    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-        printf("%s: failed to send file size response\n", prog);
-        return 0;
-    }
-    memset(message, 0, INPUT_MAX);
-
     fseek(fPtr, 0, SEEK_END);
     fSize = ftell(fPtr);
     fseek(fPtr, 0, SEEK_SET);

@@ -73,6 +73,13 @@ void get_file(int clientFd, int serverFd) {
 
     proc_file(TEMP0, TEMP1);
 
+    sprintf(message, "%s", "ready");
+    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+        printf("tcp-proxy: failed to send file size response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
     if (!tcp_file_transmit("tcp-proxy", clientFd, TEMP1)) {
         printf("tcp-proxy: failed tp transmit the file to the client\n");
     }
