@@ -14,5 +14,5 @@ int check_port(char* port);
 int tcp_file_receive(char* prog, int serverFd, char* fName);
 int tcp_file_transmit(char* prog, int clientFd, char* fName);
 
-int tcp_array_receive(char* prog, int serverFd, char* fDest);
+char* tcp_array_receive(char* prog, int serverFd);
 int tcp_array_transmit(char* prog, int clientFd, char* fDest);

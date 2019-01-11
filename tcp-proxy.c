@@ -17,7 +17,8 @@
 #define TEMP1 "temp1.txt"
 
 
-int proc_file(char* fDest, char* tDest) {
+char* proc_file(char* fDest) {
+    char* tDest;
     long int fSize;
     long int fIndex;
     long int tIndex;
@@ -26,7 +27,7 @@ int proc_file(char* fDest, char* tDest) {
     fSize = strlen(fDest);
     tDest = calloc(2 * fSize, sizeof(char));
     if (tDest == NULL) {
-        return 0;
+        return NULL;
     }
 
     fIndex = 0;
@@ -43,7 +44,7 @@ int proc_file(char* fDest, char* tDest) {
         }
     }
 
-    return 1;
+    return tDest;
 }
 
 
@@ -104,7 +105,8 @@ void get_file(int clientFd, int serverFd) {
     memset(message, 0, INPUT_MAX);
 
     /* Receive file contents from server */
-    if (!tcp_array_receive("tcp-proxy", serverFd, fDest)) {
+    fDest = tcp_array_receive("tcp-proxy", serverFd);
+    if (fDest == NULL) {
         printf("tcp-proxy: failed to receive the file from the server\n");
         sprintf(message, "%s", "error");
         if (send(clientFd, message, INPUT_MAX, 0) == -1) {
@@ -114,7 +116,8 @@ void get_file(int clientFd, int serverFd) {
     }
 
     /* Process the given file */
-    if (!proc_file(fDest, tDest)) {
+    tDest = proc_file(fDest);
+    if (tDest == NULL) {
         printf("tcp-proxy: failed to process the given file\n");
         sprintf(message, "%s", "error");
         if (send(clientFd, message, INPUT_MAX, 0) == -1) {
@@ -178,18 +181,16 @@ void put_file(int clientFd, int serverFd) {
     memset(message, 0, INPUT_MAX);
 
     /* Receive file contents from client */
-    if (!tcp_array_receive("tcp-proxy", clientFd, fDest)) {
+    fDest = tcp_array_receive("tcp-proxy", clientFd);
+    if (fDest == NULL) {
         printf("tcp-proxy: failed to receive the file from the client\n");
         return;
     }
 
     /* Process given file contents */
-    if (!proc_file(fDest, tDest)) {
+    tDest = proc_file(fDest);
+    if (tDest == NULL) {
         printf("tcp-proxy: failed to process the given file\n");
-        sprintf(message, "%s", "error");
-        if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-            printf("tcp-proxy: failed to send proxy interruption error\n");
-        }
         return;
     }
 
