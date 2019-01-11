@@ -77,29 +77,29 @@ void get_file(int clientFd, int serverFd) {
     /* Initiate request with server */
     sprintf(message, "%s", "get");
     if (send(serverFd, message, INPUT_MAX, 0) == -1) {
-        printf("x-client: failed to transmit the get command\n");
+        printf("tcp-proxy: failed to transmit the get command\n");
         return;
     }
     if (recv(serverFd, message, INPUT_MAX, 0) == -1) {
-        printf("x-client: failed to receive get command response\n");
+        printf("tcp-proxy: failed to receive get command response\n");
         return;
     }
     if (strcmp(message, "ready") != 0) {
-        printf("x-client: received unexpected get command response\n");
+        printf("tcp-proxy: received unexpected get command response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
     if (send(serverFd, fName, INPUT_MAX, 0) == -1) {
-        printf("x-client: failed to transmit the get file name\n");
+        printf("tcp-proxy: failed to transmit the get file name\n");
         return;
     }
     if (recv(serverFd, message, INPUT_MAX, 0) == -1) {
-        printf("x-client: failed to receive get file name response\n");
+        printf("tcp-proxy: failed to receive get file name response\n");
         return;
     }
     if (strcmp(message, "ready") != 0) {
-        printf("x-client: received unexpected get file name response\n");
+        printf("tcp-proxy: received unexpected get file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
@@ -194,6 +194,37 @@ void put_file(int clientFd, int serverFd) {
         return;
     }
 
+    /* Initiate the request with the server */
+    sprintf(message, "%s", "put");
+    if (send(serverFd, message, INPUT_MAX, 0) == -1) {
+        printf("tcp-proxy: failed to transmit the put command\n");
+        return;
+    }
+    if (recv(serverFd, message, INPUT_MAX, 0) == -1) {
+        printf("tcp-proxy: failed to receive put command response\n");
+        return;
+    }
+    if (strcmp(message, "ready") != 0) {
+        printf("tcp-proxy: received unexpected put command response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    if (send(serverFd, fName, INPUT_MAX, 0) == -1) {
+        printf("tcp-proxy: failed to transmit the put file name\n");
+        return;
+    }
+    if (recv(serverFd, message, INPUT_MAX, 0) == -1) {
+        printf("tcp-proxy: failed to receive put file name response\n");
+        return;
+    }
+    if (strcmp(message, "ready") != 0) {
+        printf("tcp-proxy: received unexpected put file name response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    /* Send file contents to server */
     if (!tcp_array_transmit("tcp-proxy", serverFd, tDest)) {
         printf("tcp-proxy: failed tp transmit the file to the client\n");
     }
@@ -202,8 +233,6 @@ void put_file(int clientFd, int serverFd) {
 
 int main(int argc, char* argv[]) {
     char* cmd;
-    char* lFile;
-    char* rFile;
     char* hName;
     char* hPort;
     char* sName;
@@ -265,9 +294,7 @@ int main(int argc, char* argv[]) {
     }
 
     cmd = calloc(INPUT_MAX, sizeof(char));
-    lFile = calloc(INPUT_MAX, sizeof(char));
-    rFile = calloc(INPUT_MAX, sizeof(char));
-    if (cmd == NULL || rFile == NULL || lFile == NULL) {
+    if (cmd == NULL) {
         printf("tcp-proxy: failed to allocate necessary memory\n");
         exit(1);
     }
