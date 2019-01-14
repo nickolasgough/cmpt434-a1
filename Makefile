@@ -4,7 +4,7 @@ GCC = gcc
 FLAGS = -g -std=gnu90 -Wall -pedantic
 
 
-all: x-client tcp-proxy tcp-server
+all: x-client tcp-proxy tcp-server mixed-proxy udp-server
 
 
 x-client: x-client.o x-sockets.o x-common.o
@@ -50,4 +50,4 @@ x-common.o: x-common.c x-common.h
 
 
 clean:
-	rm -rf x-client tcp-proxy tcp-server *.o
+	rm -rf x-client tcp-proxy tcp-server mixed-proxy udp-server *.o
