@@ -252,6 +252,7 @@ int udp_file_transmit(char* prog, int hostFd, int transFd, char* fName, struct s
         printf("%s: failed to send file size\n", prog);
         return 0;
     }
+    printf("waiting for response\n");
     if (recvfrom(hostFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("%s: failed to receive file size response\n", prog);
         return 0;
