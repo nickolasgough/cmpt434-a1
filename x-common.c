@@ -247,12 +247,10 @@ int udp_file_transmit(char* prog, int hostFd, int transFd, char* fName, struct s
     fSize = ftell(fPtr);
     fseek(fPtr, 0, SEEK_SET);
 
-    printf("sending file size\n");
     if (sendto(transFd, &fSize, sizeof(fSize), 0, &transAddr, transLen) == -1) {
         printf("%s: failed to send file size\n", prog);
         return 0;
     }
-    printf("waiting for response\n");
     if (recvfrom(hostFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("%s: failed to receive file size response\n", prog);
         return 0;
@@ -351,7 +349,6 @@ char* udp_array_receive(char* prog, int hostFd, int recvFd, struct sockaddr recv
         printf("%s: failed to receive file size\n", prog);
         return NULL;
     }
-    printf("file size %ld\n", fSize);
 
     fDest = calloc(fSize, sizeof(char));
     if (fDest == NULL) {
