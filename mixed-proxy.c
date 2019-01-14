@@ -17,7 +17,7 @@
 #define TEMP1 "temp1.txt"
 
 
-void get_file(int clientFd, int serverFd, struct sockaddr serverAddr, socklen_t serverLen) {
+void get_file(int hostFd, int clientFd, int serverFd, struct sockaddr serverAddr, socklen_t serverLen) {
     char* message;
     char* fName = NULL;
     char* fDest = NULL;
@@ -58,7 +58,7 @@ void get_file(int clientFd, int serverFd, struct sockaddr serverAddr, socklen_t 
         return;
     }
     printf("Receiving from server...\n");
-    if (recvfrom(serverFd, message, INPUT_MAX, 0, &serverAddr, &serverLen) == -1) {
+    if (recvfrom(hostFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("mixed-proxy: failed to receive get command response\n");
         return;
     }
@@ -112,7 +112,7 @@ void get_file(int clientFd, int serverFd, struct sockaddr serverAddr, socklen_t 
 }
 
 
-void put_file(int clientFd, int serverFd, struct sockaddr serverAddr, socklen_t serverLen) {
+void put_file(int hostFd, int clientFd, int serverFd, struct sockaddr serverAddr, socklen_t serverLen) {
     char* message;
     char* fName = NULL;
     char* fDest = NULL;
@@ -209,10 +209,12 @@ int main(int argc, char* argv[]) {
     char* hPort;
     char* sName;
     char* sPort;
+    int hostTcpFd;
+    struct addrinfo hostTcpInfo;
+    int hostUdpFd;
+    struct addrinfo hostUdpInfo;
     int serverFd;
     struct addrinfo serverInfo;
-    int hostFd;
-    struct addrinfo hostInfo;
     int clientFd;
     struct sockaddr clientAddr;
     socklen_t clientLen;
@@ -242,22 +244,30 @@ int main(int argc, char* argv[]) {
         printf("mixed-proxy: failed to determine the name of the machine\n");
         exit(1);
     }
-    if (!tcp_socket(&hostFd, &hostInfo, hName, hPort)) {
+    if (!tcp_socket(&hostTcpFd, &hostTcpInfo, hName, hPort)) {
         printf("mixed-proxy: failed to create tcp socket for given host\n");
         exit(1);
     }
-    if (bind(hostFd, hostInfo.ai_addr, hostInfo.ai_addrlen) == -1) {
+    if (bind(hostTcpFd, hostTcpInfo.ai_addr, hostTcpInfo.ai_addrlen) == -1) {
         printf("mixed-proxy: failed to bind tcp socket for given host\n");
         exit(1);
     }
 
-    if (!udp_socket(&serverFd, &serverInfo, sName, sPort)) {
+    if (!udp_socket(&hostUdpFd, &hostUdpInfo, hName, hPort)) {
         printf("mixed-proxy: failed to create udp socket for given host\n");
         exit(1);
     }
+    if (bind(hostUdpFd, hostUdpInfo.ai_addr, hostUdpInfo.ai_addrlen) == -1) {
+        printf("mixed-proxy: failed to bind udp socket for given host\n");
+        exit(1);
+    }
 
-    if (listen(hostFd, qMax) == -1) {
+    if (listen(hostTcpFd, qMax) == -1) {
         printf("mixed-proxy: failed to listen tcp socket for given host\n");
+        exit(1);
+    }
+    if (!udp_socket(&serverFd, &serverInfo, sName, sPort)) {
+        printf("mixed-proxy: failed to create udp socket for given server\n");
         exit(1);
     }
 
@@ -269,7 +279,7 @@ int main(int argc, char* argv[]) {
 
     while (1) {
         clientLen = sizeof(clientAddr);
-        clientFd = accept(hostFd, &clientAddr, &clientLen);
+        clientFd = accept(hostTcpFd, &clientAddr, &clientLen);
         if (clientFd == -1) {
             printf("mixed-proxy: failed to accept incoming connection on socket\n");
             exit(1);
@@ -286,15 +296,15 @@ int main(int argc, char* argv[]) {
             }
 
             if (strcmp(cmd, "get") == 0) {
-                get_file(clientFd, serverFd, *serverInfo.ai_addr, serverInfo.ai_addrlen);
+                get_file(hostUdpFd, clientFd, serverFd, *serverInfo.ai_addr, serverInfo.ai_addrlen);
             }
             if (strcmp(cmd, "put") == 0) {
-                put_file(clientFd, serverFd, *serverInfo.ai_addr, serverInfo.ai_addrlen);
+                put_file(hostUdpFd, clientFd, serverFd, *serverInfo.ai_addr, serverInfo.ai_addrlen);
             }
         }
     }
 
-    close(hostFd);
+    close(hostTcpFd);
     close(clientFd);
     close(serverFd);
     exit(0);
