@@ -150,7 +150,6 @@ int main(int argc, char* argv[]) {
 
     while (1) {
         rSize = recvfrom(serverFd, message, INPUT_MAX, 0, &clientAddr, &clientLen);
-        printf("IP/Port: %s\n", clientAddr.sa_data);
         if (rSize == -1) {
             printf("udp-server: failed to receive command from client\n");
             exit(1);
