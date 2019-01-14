@@ -9,7 +9,6 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <string.h>
-#include <errno.h>
 
 #include "x-sockets.h"
 #include "x-common.h"
@@ -27,9 +26,8 @@ void get_file(int clientFd, struct sockaddr clientAddr, socklen_t clientLen) {
 
     printf("Sending to proxy...\n");
     sprintf(message, "%s", "ready");
-    if (sendto(clientFd, (void*) message, INPUT_MAX, 0, &clientAddr, sizeof(struct sockaddr_in)) == - 1) {
+    if (sendto(clientFd, message, INPUT_MAX, 0, &clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send get file name response\n");
-        printf("Error: %d - %s\n", errno, strerror(errno));
         return;
     }
     memset(message, 0, INPUT_MAX);
@@ -173,7 +171,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (strcmp(message, "get") == 0) {
-            get_file(clientFd, clientAddr, clientLen);
+            get_file(clientFd, *clientInfo.ai_addr, clientInfo.ai_addrlen);
         }
         if (strcmp(message, "put") == 0) {
             put_file(clientFd, clientAddr, clientLen);
