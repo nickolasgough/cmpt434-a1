@@ -17,6 +17,7 @@
 void get_file(int clientFd, struct sockaddr clientAddr, socklen_t clientLen) {
     char* message;
     char* fName;
+    int err;
 
     message = calloc(INPUT_MAX, sizeof(char));
     fName = calloc(INPUT_MAX, sizeof(char));
@@ -26,8 +27,10 @@ void get_file(int clientFd, struct sockaddr clientAddr, socklen_t clientLen) {
 
     printf("Sending to proxy...\n");
     sprintf(message, "%s", "ready");
-    if (sendto(clientFd, message, INPUT_MAX, 0, &clientAddr, sizeof(clientAddr)) == - 1) {
+    err = sendto(clientFd, message, INPUT_MAX, 0, &clientAddr, clientLen);
+    if (sendto(clientFd, message, INPUT_MAX, 0, &clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send get file name response\n");
+        printf("Error is: %d\n", err);
         return;
     }
     memset(message, 0, INPUT_MAX);
