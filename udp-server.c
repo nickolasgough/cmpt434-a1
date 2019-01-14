@@ -29,7 +29,7 @@ void get_file(int clientFd, struct sockaddr clientAddr, socklen_t clientLen) {
     sprintf(message, "%s", "ready");
     if (sendto(clientFd, message, INPUT_MAX, 0, &clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send get file name response\n");
-        printf("Error: %d - %s", errno, strerror(errno));
+        printf("Error: %d - %s\n", errno, strerror(errno));
         return;
     }
     memset(message, 0, INPUT_MAX);
