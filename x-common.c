@@ -247,6 +247,7 @@ int udp_file_transmit(char* prog, int hostFd, int transFd, char* fName, struct s
     fSize = ftell(fPtr);
     fseek(fPtr, 0, SEEK_SET);
 
+    printf("sending file size\n");
     if (sendto(transFd, &fSize, sizeof(fSize), 0, &transAddr, transLen) == -1) {
         printf("%s: failed to send file size\n", prog);
         return 0;
