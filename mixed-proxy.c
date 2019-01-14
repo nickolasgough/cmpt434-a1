@@ -285,6 +285,7 @@ int main(int argc, char* argv[]) {
             }
 
             if (strcmp(cmd, "get") == 0) {
+                printf("Performing get command...\n");
                 get_file(clientFd, serverFd, *serverInfo.ai_addr, serverInfo.ai_addrlen);
             }
             if (strcmp(cmd, "put") == 0) {
