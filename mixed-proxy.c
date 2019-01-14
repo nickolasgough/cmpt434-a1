@@ -255,6 +255,10 @@ int main(int argc, char* argv[]) {
         printf("mixed-proxy: failed to create udp socket for given host\n");
         exit(1);
     }
+    if (bind(serverFd, serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
+        printf("mixed-proxy: failed to bind udp socket for given host\n");
+        exit(1);
+    }
 
     if (listen(hostFd, qMax) == -1) {
         printf("mixed-proxy: failed to listen tcp socket for given host\n");
@@ -286,7 +290,6 @@ int main(int argc, char* argv[]) {
             }
 
             if (strcmp(cmd, "get") == 0) {
-                printf("Performing get command...\n");
                 get_file(clientFd, serverFd, *serverInfo.ai_addr, serverInfo.ai_addrlen);
             }
             if (strcmp(cmd, "put") == 0) {
