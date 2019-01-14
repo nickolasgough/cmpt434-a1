@@ -107,7 +107,7 @@ int tcp_file_receive(char* prog, int recvFd, char* fName) {
 }
 
 
-int udp_file_receive(char* prog, int recvFd, char* fName, struct sockaddr recvAddr, socklen_t recvLen) {
+int udp_file_receive(char* prog, int hostFd, int recvFd, char* fName, struct sockaddr recvAddr, socklen_t recvLen) {
     char* message;
     FILE* fPtr;
     long int fSize;
@@ -126,7 +126,7 @@ int udp_file_receive(char* prog, int recvFd, char* fName, struct sockaddr recvAd
         return 0;
     }
 
-    if (recvfrom(recvFd, &fSize, sizeof(fSize), 0, &recvAddr, &recvLen) == -1) {
+    if (recvfrom(hostFd, &fSize, sizeof(fSize), 0, NULL, NULL) == -1) {
         printf("%s: failed to receive file size\n", prog);
         return 0;
     }
@@ -141,7 +141,7 @@ int udp_file_receive(char* prog, int recvFd, char* fName, struct sockaddr recvAd
     printf("%s: receiving the file...\n", prog);
     while (fSize > 0) {
         rAmount = fSize > INPUT_MAX ? INPUT_MAX : fSize;
-        rSize = recvfrom(recvFd, message, rAmount, 0, &recvAddr, &recvLen);
+        rSize = recvfrom(hostFd, message, rAmount, 0, NULL, NULL);
         if (rSize == -1) {
             printf("%s: failed to receive the whole file\n", prog);
             return 0;
@@ -219,7 +219,7 @@ int tcp_file_transmit(char* prog, int transFd, char* fName) {
 }
 
 
-int udp_file_transmit(char* prog, int transFd, char* fName, struct sockaddr transAddr, socklen_t transLen) {
+int udp_file_transmit(char* prog, int hostFd, int transFd, char* fName, struct sockaddr transAddr, socklen_t transLen) {
     char* message;
     FILE* fPtr;
     long int fSize;
@@ -251,7 +251,7 @@ int udp_file_transmit(char* prog, int transFd, char* fName, struct sockaddr tran
         printf("%s: failed to send file size\n", prog);
         return 0;
     }
-    if (recvfrom(transFd, message, INPUT_MAX, 0, &transAddr, &transLen) == -1) {
+    if (recvfrom(hostFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("%s: failed to receive file size response\n", prog);
         return 0;
     }
@@ -331,7 +331,7 @@ char* tcp_array_receive(char* prog, int recvFd) {
 }
 
 
-char* udp_array_receive(char* prog, int recvFd, struct sockaddr recvAddr, socklen_t recvLen) {
+char* udp_array_receive(char* prog, int hostFd, int recvFd, struct sockaddr recvAddr, socklen_t recvLen) {
     char* message;
     char* fDest;
     long int fSize;
@@ -345,7 +345,7 @@ char* udp_array_receive(char* prog, int recvFd, struct sockaddr recvAddr, sockle
         return NULL;
     }
 
-    if (recvfrom(recvFd, &fSize, sizeof(fSize), 0, &recvAddr, &recvLen) == -1) {
+    if (recvfrom(hostFd, &fSize, sizeof(fSize), 0, &recvAddr, &recvLen) == -1) {
         printf("%s: failed to receive file size\n", prog);
         return NULL;
     }
@@ -367,7 +367,7 @@ char* udp_array_receive(char* prog, int recvFd, struct sockaddr recvAddr, sockle
     cPos = 0;
     while (fSize > 0) {
         rAmount = fSize > INPUT_MAX ? INPUT_MAX : fSize;
-        rSize = recvfrom(recvFd, &fDest[cPos], rAmount, 0, &recvAddr, &recvLen);
+        rSize = recvfrom(hostFd, &fDest[cPos], rAmount, 0, NULL, NULL);
         if (rSize == -1) {
             printf("%s: failed to receive the whole file\n", prog);
             return NULL;
@@ -430,7 +430,7 @@ int tcp_array_transmit(char* prog, int transFd, char* fDest) {
 }
 
 
-int udp_array_transmit(char* prog, int transFd, char* fDest, struct sockaddr transAddr, socklen_t transLen) {
+int udp_array_transmit(char* prog, int hostFd, int transFd, char* fDest, struct sockaddr transAddr, socklen_t transLen) {
     char* message;
     long int fSize;
     long int sSize;
@@ -449,7 +449,7 @@ int udp_array_transmit(char* prog, int transFd, char* fDest, struct sockaddr tra
         printf("%s: failed to send file size\n", prog);
         return 0;
     }
-    if (recvfrom(transFd, message, INPUT_MAX, 0, &transAddr, &transLen) == -1) {
+    if (recvfrom(hostFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("%s: failed to receive file size response\n", prog);
         return 0;
     }

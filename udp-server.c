@@ -14,7 +14,7 @@
 #include "x-common.h"
 
 
-void get_file(int clientFd, struct sockaddr clientAddr, socklen_t clientLen) {
+void get_file(int hostFd, int clientFd, struct sockaddr clientAddr, socklen_t clientLen) {
     char* message;
     char* fName;
 
@@ -24,7 +24,6 @@ void get_file(int clientFd, struct sockaddr clientAddr, socklen_t clientLen) {
         return;
     }
 
-    printf("Sending to proxy...\n");
     sprintf(message, "%s", "ready");
     if (sendto(clientFd, message, INPUT_MAX, 0, &clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send get file name response\n");
@@ -32,8 +31,7 @@ void get_file(int clientFd, struct sockaddr clientAddr, socklen_t clientLen) {
     }
     memset(message, 0, INPUT_MAX);
 
-    printf("Receiving from proxy...\n");
-    if (recvfrom(clientFd, fName, INPUT_MAX, 0, &clientAddr, &clientLen) == -1) {
+    if (recvfrom(hostFd, fName, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("udp-server: failed to receive get file name\n");
         return;
     }
@@ -55,11 +53,11 @@ void get_file(int clientFd, struct sockaddr clientAddr, socklen_t clientLen) {
     }
     memset(message, 0, INPUT_MAX);
 
-    udp_file_transmit("udp-server", clientFd, fName, clientAddr, clientLen);
+    udp_file_transmit("udp-server", hostFd, clientFd, fName, clientAddr, clientLen);
 }
 
 
-void put_file(int clientFd, struct sockaddr clientAddr, socklen_t clientLen)  {
+void put_file(int hostFd, int clientFd, struct sockaddr clientAddr, socklen_t clientLen)  {
     char* message;
     char* fName;
 
@@ -77,7 +75,7 @@ void put_file(int clientFd, struct sockaddr clientAddr, socklen_t clientLen)  {
     }
     memset(message, 0, INPUT_MAX);
 
-    if (recvfrom(clientFd, fName, INPUT_MAX, 0, &clientAddr, &clientLen) == -1) {
+    if (recvfrom(hostFd, fName, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("udp-server: failed to receive put file name\n");
         return;
     }
@@ -99,7 +97,7 @@ void put_file(int clientFd, struct sockaddr clientAddr, socklen_t clientLen)  {
     }
     memset(message, 0, INPUT_MAX);
 
-    udp_file_receive("udp-server", clientFd, fName, clientAddr, clientLen);
+    udp_file_receive("udp-server", hostFd, clientFd, fName, clientAddr, clientLen);
 }
 
 
@@ -108,12 +106,10 @@ int main(int argc, char* argv[]) {
     char* hPort;
     char* sName;
     char* sPort;
-    int serverFd;
+    int hostFd;
     struct addrinfo serverInfo;
     int clientFd;
     struct addrinfo clientInfo;
-    struct sockaddr clientAddr;
-    socklen_t clientLen;
     char* message;
     int rSize;
 
@@ -140,12 +136,12 @@ int main(int argc, char* argv[]) {
         printf("udp-server: failed to determine the name of the machine\n");
         exit(1);
     }
-    if (!udp_socket(&serverFd, &serverInfo, hName, hPort)) {
+    if (!udp_socket(&hostFd, &serverInfo, hName, hPort)) {
         printf("udp-server: failed to create udp socket for given host\n");
         exit(1);
     }
 
-    if (bind(serverFd, serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
+    if (bind(hostFd, serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
         printf("udp-server: failed to bind udp socket for given host\n");
         exit(1);
     }
@@ -162,22 +158,20 @@ int main(int argc, char* argv[]) {
     }
 
     while (1) {
-        memset(&clientAddr, 0, sizeof(clientAddr));
-
-        rSize = recvfrom(serverFd, message, INPUT_MAX, 0, &clientAddr, &clientLen);
+        rSize = recvfrom(hostFd, message, INPUT_MAX, 0, NULL, NULL);
         if (rSize == -1) {
             printf("udp-server: failed to receive command from client\n");
             exit(1);
         }
 
         if (strcmp(message, "get") == 0) {
-            get_file(clientFd, *clientInfo.ai_addr, clientInfo.ai_addrlen);
+            get_file(hostFd, clientFd, *clientInfo.ai_addr, clientInfo.ai_addrlen);
         }
         if (strcmp(message, "put") == 0) {
-            put_file(clientFd, clientAddr, clientLen);
+            put_file(hostFd, clientFd, *clientInfo.ai_addr, clientInfo.ai_addrlen);
         }
     }
 
-    close(serverFd);
+    close(hostFd);
     exit(0);
 }

@@ -51,13 +51,11 @@ void get_file(int hostFd, int clientFd, int serverFd, struct sockaddr serverAddr
     memset(message, 0, INPUT_MAX);
 
     /* Initiate request with server */
-    printf("Sending to server...\n");
     sprintf(message, "%s", "get");
     if (sendto(serverFd, message, INPUT_MAX, 0, &serverAddr, serverLen) == -1) {
         printf("mixed-proxy: failed to transmit the get command\n");
         return;
     }
-    printf("Receiving from server...\n");
     if (recvfrom(hostFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("mixed-proxy: failed to receive get command response\n");
         return;
@@ -67,13 +65,12 @@ void get_file(int hostFd, int clientFd, int serverFd, struct sockaddr serverAddr
         return;
     }
     memset(message, 0, INPUT_MAX);
-    printf("Received from server...\n");
 
     if (sendto(serverFd, fName, INPUT_MAX, 0, &serverAddr, serverLen) == -1) {
         printf("mixed-proxy: failed to transmit the get file name\n");
         return;
     }
-    if (recvfrom(serverFd, message, INPUT_MAX, 0, &serverAddr, &serverLen) == -1) {
+    if (recvfrom(hostFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("mixed-proxy: failed to receive get file name response\n");
         return;
     }
@@ -84,7 +81,7 @@ void get_file(int hostFd, int clientFd, int serverFd, struct sockaddr serverAddr
     memset(message, 0, INPUT_MAX);
 
     /* Receive file contents from server */
-    fDest = udp_array_receive("mixed-proxy", serverFd, serverAddr, serverLen);
+    fDest = udp_array_receive("mixed-proxy", hostFd, serverFd, serverAddr, serverLen);
     if (fDest == NULL) {
         printf("mixed-proxy: failed to receive the file from the server\n");
         sprintf(message, "%s", "error");
@@ -172,7 +169,7 @@ void put_file(int hostFd, int clientFd, int serverFd, struct sockaddr serverAddr
         printf("mixed-proxy: failed to transmit the put command\n");
         return;
     }
-    if (recvfrom(serverFd, message, INPUT_MAX, 0, &serverAddr, &serverLen) == -1) {
+    if (recvfrom(hostFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("mixed-proxy: failed to receive put command response\n");
         return;
     }
@@ -186,7 +183,7 @@ void put_file(int hostFd, int clientFd, int serverFd, struct sockaddr serverAddr
         printf("mixed-proxy: failed to transmit the put file name\n");
         return;
     }
-    if (recvfrom(serverFd, message, INPUT_MAX, 0, &serverAddr, &serverLen) == -1) {
+    if (recvfrom(hostFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("mixed-proxy: failed to receive put file name response\n");
         return;
     }
@@ -197,7 +194,7 @@ void put_file(int hostFd, int clientFd, int serverFd, struct sockaddr serverAddr
     memset(message, 0, INPUT_MAX);
 
     /* Send file contents to server */
-    if (!udp_array_transmit("mixed-proxy", serverFd, tDest, serverAddr, serverLen)) {
+    if (!udp_array_transmit("mixed-proxy", hostFd, serverFd, tDest, serverAddr, serverLen)) {
         printf("mixed-proxy: failed tp transmit the file to the client\n");
     }
 }
