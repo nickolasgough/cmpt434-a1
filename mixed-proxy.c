@@ -255,10 +255,6 @@ int main(int argc, char* argv[]) {
         printf("mixed-proxy: failed to create udp socket for given host\n");
         exit(1);
     }
-    if (bind(serverFd, serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
-        printf("mixed-proxy: failed to bind udp socket for given host\n");
-        exit(1);
-    }
 
     if (listen(hostFd, qMax) == -1) {
         printf("mixed-proxy: failed to listen tcp socket for given host\n");
