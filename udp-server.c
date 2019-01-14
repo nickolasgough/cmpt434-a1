@@ -24,6 +24,7 @@ void get_file(int serverFd, struct sockaddr clientAddr, socklen_t clientLen) {
         return;
     }
 
+    printf("Sending to proxy...\n");
     sprintf(message, "%s", "ready");
     if (sendto(serverFd, message, INPUT_MAX, 0, &clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send get file name response\n");
@@ -31,6 +32,7 @@ void get_file(int serverFd, struct sockaddr clientAddr, socklen_t clientLen) {
     }
     memset(message, 0, INPUT_MAX);
 
+    printf("Receiving from proxy...\n");
     if (recvfrom(serverFd, fName, INPUT_MAX, 0, &clientAddr, &clientLen) == -1) {
         printf("udp-server: failed to receive get file name\n");
         return;
