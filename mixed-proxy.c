@@ -53,12 +53,12 @@ void get_file(int clientFd, int serverFd, struct sockaddr serverAddr, socklen_t 
     /* Initiate request with server */
     printf("Sending to server...\n");
     sprintf(message, "%s", "get");
-    if (sendto(serverFd, message, INPUT_MAX, 0, &serverAddr, serverLen) == -1) {
+    if (sendto(serverFd, message, INPUT_MAX, MSG_CONFIRM, &serverAddr, serverLen) == -1) {
         printf("mixed-proxy: failed to transmit the get command\n");
         return;
     }
     printf("Receiving from server...\n");
-    if (recvfrom(serverFd, message, INPUT_MAX, 0, &serverAddr, &serverLen) == -1) {
+    if (recvfrom(serverFd, message, INPUT_MAX, MSG_WAITALL, &serverAddr, &serverLen) == -1) {
         printf("mixed-proxy: failed to receive get command response\n");
         return;
     }
