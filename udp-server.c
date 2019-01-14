@@ -14,7 +14,7 @@
 #include "x-common.h"
 
 
-void get_file(int serverFd, struct sockaddr clientAddr, socklen_t clientLen) {
+void get_file(int serverFd, struct sockaddr* clientAddr, socklen_t* clientLen) {
     char* message;
     char* fName;
 
@@ -25,13 +25,13 @@ void get_file(int serverFd, struct sockaddr clientAddr, socklen_t clientLen) {
     }
 
     sprintf(message, "%s", "ready");
-    if (sendto(serverFd, message, INPUT_MAX, 0, &clientAddr, clientLen) == - 1) {
+    if (sendto(serverFd, message, INPUT_MAX, 0, clientAddr, *clientLen) == - 1) {
         printf("udp-server: failed to send get file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
-    if (recvfrom(serverFd, fName, INPUT_MAX, 0, &clientAddr, &clientLen) == -1) {
+    if (recvfrom(serverFd, fName, INPUT_MAX, 0, clientAddr, clientLen) == -1) {
         printf("udp-server: failed to receive get file name\n");
         return;
     }
@@ -39,7 +39,7 @@ void get_file(int serverFd, struct sockaddr clientAddr, socklen_t clientLen) {
     if (access(fName, F_OK)) {
         printf("udp-server: file %s does not exist\n", fName);
         sprintf(message, "%s", "error");
-        if (sendto(serverFd, message, INPUT_MAX, 0, &clientAddr, clientLen) == -1) {
+        if (sendto(serverFd, message, INPUT_MAX, 0, clientAddr, *clientLen) == -1) {
             printf("udp-server: failed to send file does not exist error\n");
         }
         return;
@@ -47,13 +47,13 @@ void get_file(int serverFd, struct sockaddr clientAddr, socklen_t clientLen) {
     memset(message, 0, INPUT_MAX);
 
     sprintf(message, "%s", "ready");
-    if (sendto(serverFd, message, INPUT_MAX, 0, &clientAddr, clientLen) == -1) {
+    if (sendto(serverFd, message, INPUT_MAX, 0, clientAddr, *clientLen) == -1) {
         printf("udp-server: failed to send get file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
-    udp_file_transmit("udp-server", serverFd, fName, clientAddr, clientLen);
+    udp_file_transmit("udp-server", serverFd, fName, *clientAddr, *clientLen);
 }
 
 
@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (strcmp(message, "get") == 0) {
-            get_file(serverFd, clientAddr, clientLen);
+            get_file(serverFd, &clientAddr, &clientLen);
         }
         if (strcmp(message, "put") == 0) {
             put_file(serverFd, clientAddr, clientLen);
