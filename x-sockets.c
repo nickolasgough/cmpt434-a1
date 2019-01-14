@@ -40,7 +40,7 @@ int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
         return 0;
     }
     
-    sockFd = socket(pAi->ai_family, pAi->ai_socktype, pAi->ai_protocol);
+    sockFd = socket(pAi->ai_family, pAi->ai_socktype, IPPROTO_TCP);
     if (sockFd < 0) {
         return 0;
     }
@@ -77,7 +77,7 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
         return 0;
     }
     
-    sockFd = socket(pAi->ai_family, pAi->ai_socktype, pAi->ai_protocol);
+    sockFd = socket(pAi->ai_family, pAi->ai_socktype, IPPROTO_UDP);
     if (sockFd < 0) {
         return 0;
     }
