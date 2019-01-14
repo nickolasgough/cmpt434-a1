@@ -251,7 +251,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (!udp_socket(&serverFd, &serverInfo, sName, sPort)) {
-        printf("mixed-proxy: failed to create tcp socket for given host\n");
+        printf("mixed-proxy: failed to create udp socket for given host\n");
         exit(1);
     }
 

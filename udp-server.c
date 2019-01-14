@@ -105,22 +105,27 @@ void put_file(int clientFd, struct sockaddr clientAddr, socklen_t clientLen)  {
 
 int main(int argc, char* argv[]) {
     char* hName;
-    char* port;
+    char* hPort;
+    char* sName;
+    char* sPort;
     int serverFd;
     struct addrinfo serverInfo;
     int clientFd;
+    struct addrinfo clientInfo;
     struct sockaddr clientAddr;
     socklen_t clientLen;
     char* message;
     int rSize;
 
-    if (argc != 2) {
-        printf("usage: ./udp-server <port number>\n");
+    if (argc != 4) {
+        printf("usage: ./udp-server <host port> <client name> <client port>\n");
         exit(1);
     }
 
-    port = argv[1];
-    if (!check_port(port)) {
+    hPort = argv[1];
+    sName = argv[2];
+    sPort = argv[3];
+    if (!check_port(hPort) || !check_port(sPort)) {
         printf("udp-server: port number must be between 30000 and 40000\n");
         exit(1);
     }
@@ -135,19 +140,19 @@ int main(int argc, char* argv[]) {
         printf("udp-server: failed to determine the name of the machine\n");
         exit(1);
     }
-    if (!udp_socket(&serverFd, &serverInfo, hName, port)) {
-        printf("udp-server: failed to create tcp socket for given host\n");
+    if (!udp_socket(&serverFd, &serverInfo, hName, hPort)) {
+        printf("udp-server: failed to create udp socket for given host\n");
         exit(1);
     }
 
     if (bind(serverFd, serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
-        printf("udp-server: failed to bind tcp socket for given host\n");
+        printf("udp-server: failed to bind udp socket for given host\n");
         exit(1);
     }
 
-    clientFd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (clientFd < 0) {
-        return 0;
+    if (!udp_socket(&clientFd, &clientInfo, sName, sPort)) {
+        printf("udp-server: failed to create udp socket for given client\n");
+        exit(1);
     }
 
     message = calloc(INPUT_MAX, sizeof(char));
