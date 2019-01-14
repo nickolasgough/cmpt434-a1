@@ -17,7 +17,7 @@
 #define TEMP1 "temp1.txt"
 
 
-void get_file(int clientFd, int serverFd) {
+void get_file(int clientFd, int serverFd, struct sockaddr serverAddr, socklen_t serverLen) {
     char* message;
     char* fName = NULL;
     char* fDest = NULL;
@@ -26,67 +26,67 @@ void get_file(int clientFd, int serverFd) {
     message = calloc(INPUT_MAX, sizeof(char));
     fName = calloc(INPUT_MAX, sizeof(char));
     if (message == NULL || fName == NULL) {
-        printf("tcp-proxy: failed to allocate necessary memory\n");
+        printf("mixed-proxy: failed to allocate necessary memory\n");
         return;
     }
 
     /* Initiate request with client */
     sprintf(message, "%s", "ready");
     if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to send get file name response\n");
+        printf("mixed-proxy: failed to send get file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
     if (recv(clientFd, fName, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to receive get file name\n");
+        printf("mixed-proxy: failed to receive get file name\n");
         return;
     }
 
     sprintf(message, "%s", "ready");
     if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to send get file name response\n");
+        printf("mixed-proxy: failed to send get file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
     /* Initiate request with server */
     sprintf(message, "%s", "get");
-    if (send(serverFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to transmit the get command\n");
+    if (sendto(serverFd, message, INPUT_MAX, 0, &serverAddr, serverLen) == -1) {
+        printf("mixed-proxy: failed to transmit the get command\n");
         return;
     }
-    if (recv(serverFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to receive get command response\n");
+    if (recvfrom(serverFd, message, INPUT_MAX, 0, &serverAddr, &serverLen) == -1) {
+        printf("mixed-proxy: failed to receive get command response\n");
         return;
     }
     if (strcmp(message, "ready") != 0) {
-        printf("tcp-proxy: received unexpected get command response\n");
+        printf("mixed-proxy: received unexpected get command response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
-    if (send(serverFd, fName, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to transmit the get file name\n");
+    if (sendto(serverFd, fName, INPUT_MAX, 0, &serverAddr, serverLen) == -1) {
+        printf("mixed-proxy: failed to transmit the get file name\n");
         return;
     }
-    if (recv(serverFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to receive get file name response\n");
+    if (recvfrom(serverFd, message, INPUT_MAX, 0, &serverAddr, &serverLen) == -1) {
+        printf("mixed-proxy: failed to receive get file name response\n");
         return;
     }
     if (strcmp(message, "ready") != 0) {
-        printf("tcp-proxy: received unexpected get file name response\n");
+        printf("mixed-proxy: received unexpected get file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
     /* Receive file contents from server */
-    fDest = tcp_array_receive("tcp-proxy", serverFd);
+    fDest = udp_array_receive("mixed-proxy", serverFd, serverAddr, serverLen);
     if (fDest == NULL) {
-        printf("tcp-proxy: failed to receive the file from the server\n");
+        printf("mixed-proxy: failed to receive the file from the server\n");
         sprintf(message, "%s", "error");
         if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-            printf("tcp-proxy: failed to send proxy interruption error\n");
+            printf("mixed-proxy: failed to send proxy interruption error\n");
         }
         return;
     }
@@ -94,22 +94,22 @@ void get_file(int clientFd, int serverFd) {
     /* Process the given file */
     tDest = proc_file(fDest);
     if (tDest == NULL) {
-        printf("tcp-proxy: failed to process the given file\n");
+        printf("mixed-proxy: failed to process the given file\n");
         sprintf(message, "%s", "error");
         if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-            printf("tcp-proxy: failed to send proxy interruption error\n");
+            printf("mixed-proxy: failed to send proxy interruption error\n");
         }
         return;
     }
 
     /* Send file contents to client */
-    if (!tcp_array_transmit("tcp-proxy", clientFd, tDest)) {
-        printf("tcp-proxy: failed tp transmit the file to the client\n");
+    if (!tcp_array_transmit("mixed-proxy", clientFd, tDest)) {
+        printf("mixed-proxy: failed tp transmit the file to the client\n");
     }
 }
 
 
-void put_file(int clientFd, int serverFd) {
+void put_file(int clientFd, int serverFd, struct sockaddr serverAddr, socklen_t serverLen) {
     char* message;
     char* fName = NULL;
     char* fDest = NULL;
@@ -118,7 +118,7 @@ void put_file(int clientFd, int serverFd) {
     message = calloc(INPUT_MAX, sizeof(char));
     fName = calloc(INPUT_MAX, sizeof(char));
     if (message == NULL || fName == NULL) {
-        printf("tcp-proxy: failed to allocate necessary memory\n");
+        printf("mixed-proxy: failed to allocate necessary memory\n");
         return;
     }
 
@@ -126,76 +126,76 @@ void put_file(int clientFd, int serverFd) {
     message = calloc(INPUT_MAX, sizeof(char));
     fName = calloc(INPUT_MAX, sizeof(char));
     if (message == NULL || fName == NULL) {
-        printf("tcp-proxy: failed to allocate necessary memory\n");
+        printf("mixed-proxy: failed to allocate necessary memory\n");
         return;
     }
 
     sprintf(message, "%s", "ready");
     if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to send put file name response\n");
+        printf("mixed-proxy: failed to send put file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
     if (recv(clientFd, fName, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to receive put file name\n");
+        printf("mixed-proxy: failed to receive put file name\n");
         return;
     }
 
     sprintf(message, "%s", "ready");
     if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to send put file name response\n");
+        printf("mixed-proxy: failed to send put file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
     /* Receive file contents from client */
-    fDest = tcp_array_receive("tcp-proxy", clientFd);
+    fDest = tcp_array_receive("mixed-proxy", clientFd);
     if (fDest == NULL) {
-        printf("tcp-proxy: failed to receive the file from the client\n");
+        printf("mixed-proxy: failed to receive the file from the client\n");
         return;
     }
 
     /* Process given file contents */
     tDest = proc_file(fDest);
     if (tDest == NULL) {
-        printf("tcp-proxy: failed to process the given file\n");
+        printf("mixed-proxy: failed to process the given file\n");
         return;
     }
 
     /* Initiate the request with the server */
     sprintf(message, "%s", "put");
-    if (send(serverFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to transmit the put command\n");
+    if (sendto(serverFd, message, INPUT_MAX, 0, &serverAddr, serverLen) == -1) {
+        printf("mixed-proxy: failed to transmit the put command\n");
         return;
     }
-    if (recv(serverFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to receive put command response\n");
+    if (recvfrom(serverFd, message, INPUT_MAX, 0, &serverAddr, &serverLen) == -1) {
+        printf("mixed-proxy: failed to receive put command response\n");
         return;
     }
     if (strcmp(message, "ready") != 0) {
-        printf("tcp-proxy: received unexpected put command response\n");
+        printf("mixed-proxy: received unexpected put command response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
-    if (send(serverFd, fName, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to transmit the put file name\n");
+    if (sendto(serverFd, fName, INPUT_MAX, 0, &serverAddr, serverLen) == -1) {
+        printf("mixed-proxy: failed to transmit the put file name\n");
         return;
     }
-    if (recv(serverFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to receive put file name response\n");
+    if (recvfrom(serverFd, message, INPUT_MAX, 0, &serverAddr, &serverLen) == -1) {
+        printf("mixed-proxy: failed to receive put file name response\n");
         return;
     }
     if (strcmp(message, "ready") != 0) {
-        printf("tcp-proxy: received unexpected put file name response\n");
+        printf("mixed-proxy: received unexpected put file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
     /* Send file contents to server */
-    if (!tcp_array_transmit("tcp-proxy", serverFd, tDest)) {
-        printf("tcp-proxy: failed tp transmit the file to the client\n");
+    if (!udp_array_transmit("mixed-proxy", serverFd, tDest, serverAddr, serverLen)) {
+        printf("mixed-proxy: failed tp transmit the file to the client\n");
     }
 }
 
@@ -217,7 +217,7 @@ int main(int argc, char* argv[]) {
     int qMax = 1;
 
     if (argc != 4) {
-        printf("usage: ./tcp-proxy <host port> <server name> <server port>\n");
+        printf("usage: ./mixed-proxy <host port> <server name> <server port>\n");
         exit(1);
     }
 
@@ -225,46 +225,42 @@ int main(int argc, char* argv[]) {
     sName = argv[2];
     sPort = argv[3];
     if (!check_port(hPort) || !check_port(sPort)) {
-        printf("tcp-proxy: port number must be between 30000 and 40000\n");
+        printf("mixed-proxy: port number must be between 30000 and 40000\n");
         exit(1);
     }
 
     hName = calloc(INPUT_MAX, sizeof(char));
     if (hName == NULL) {
-        printf("tcp-proxy: failed to allocate necessary memory\n");
+        printf("mixed-proxy: failed to allocate necessary memory\n");
         exit(1);
     }
 
     if (gethostname(hName, INPUT_MAX) == -1) {
-        printf("tcp-proxy: failed to determine the name of the machine\n");
+        printf("mixed-proxy: failed to determine the name of the machine\n");
         exit(1);
     }
     if (!tcp_socket(&hostFd, &hostInfo, hName, hPort)) {
-        printf("tcp-proxy: failed to create tcp socket for given host\n");
+        printf("mixed-proxy: failed to create tcp socket for given host\n");
         exit(1);
     }
     if (bind(hostFd, hostInfo.ai_addr, hostInfo.ai_addrlen) == -1) {
-        printf("tcp-proxy: failed to bind tcp socket for given host\n");
+        printf("mixed-proxy: failed to bind tcp socket for given host\n");
         exit(1);
     }
 
-    if (!tcp_socket(&serverFd, &serverInfo, sName, sPort)) {
-        printf("tcp-proxy: failed to create tcp socket for given host\n");
-        exit(1);
-    }
-    if (connect(serverFd, serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
-        printf("tcp-proxy: failed to connect tcp socket for given host\n");
+    if (!udp_socket(&serverFd, &serverInfo, sName, sPort)) {
+        printf("mixed-proxy: failed to create tcp socket for given host\n");
         exit(1);
     }
 
     if (listen(hostFd, qMax) == -1) {
-        printf("tcp-proxy: failed to listen tcp socket for given host\n");
+        printf("mixed-proxy: failed to listen tcp socket for given host\n");
         exit(1);
     }
 
     cmd = calloc(INPUT_MAX, sizeof(char));
     if (cmd == NULL) {
-        printf("tcp-proxy: failed to allocate necessary memory\n");
+        printf("mixed-proxy: failed to allocate necessary memory\n");
         exit(1);
     }
 
@@ -272,7 +268,7 @@ int main(int argc, char* argv[]) {
         clientLen = sizeof(clientAddr);
         clientFd = accept(hostFd, &clientAddr, &clientLen);
         if (clientFd == -1) {
-            printf("tcp-proxy: failed to accept incoming connection on socket\n");
+            printf("mixed-proxy: failed to accept incoming connection on socket\n");
             exit(1);
         }
 
@@ -282,15 +278,15 @@ int main(int argc, char* argv[]) {
                 break;
             }
             if (rResult == -1) {
-                printf("tcp-proxy: failed to receive command from client\n");
+                printf("mixed-proxy: failed to receive command from client\n");
                 exit(1);
             }
 
             if (strcmp(cmd, "get") == 0) {
-                get_file(clientFd, serverFd);
+                get_file(clientFd, serverFd, *serverInfo.ai_addr, serverInfo.ai_addrlen);
             }
             if (strcmp(cmd, "put") == 0) {
-                put_file(clientFd, serverFd);
+                put_file(clientFd, serverFd, *serverInfo.ai_addr, serverInfo.ai_addrlen);
             }
         }
     }

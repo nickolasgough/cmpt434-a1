@@ -21,10 +21,24 @@ tcp-proxy.o: tcp-proxy.c
 	$(CC) -o $@ -c $(FLAGS) $<
 
 
+mixed-proxy: mixed-proxy.o x-sockets.o x-common.o
+	$(GCC) -o $@ $(FLAGS) $^
+
+mixed-proxy.o: mixed-proxy.c
+	$(CC) -o $@ -c $(FLAGS) $<
+
+
 tcp-server: tcp-server.o x-sockets.o x-common.o
 	$(GCC) -o $@ $(FLAGS) $^
 
 tcp-server.o: tcp-server.c
+	$(CC) -o $@ -c $(FLAGS) $<
+
+
+udp-server: udp-server.o x-sockets.o x-common.o
+	$(GCC) -o $@ $(FLAGS) $^
+
+udp-server.o: udp-server.c
 	$(CC) -o $@ -c $(FLAGS) $<
 
 

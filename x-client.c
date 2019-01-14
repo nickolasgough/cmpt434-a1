@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    if (!socket_tcp(&serverFd, &sockInfo, hName, port)) {
+    if (!tcp_socket(&serverFd, &sockInfo, hName, port)) {
         printf("x-client: failed to create tcp socket for given host\n");
         exit(1);
     }

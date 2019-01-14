@@ -91,7 +91,7 @@ void put_file(int clientFd)  {
     memset(message, 0, INPUT_MAX);
 
     sprintf(message, "%s", "ready");
-    if (send(clientFd, message, INPUT_MAX, 0) == - 1) {
+    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
         printf("tcp-server: failed to send put file name response\n");
         return;
     }
@@ -134,7 +134,7 @@ int main(int argc, char* argv[]) {
         printf("tcp-server: failed to determine the name of the machine\n");
         exit(1);
     }
-    if (!socket_tcp(&sockFd, &sockInfo, hName, port)) {
+    if (!tcp_socket(&sockFd, &sockInfo, hName, port)) {
         printf("tcp-server: failed to create tcp socket for given host\n");
         exit(1);
     }

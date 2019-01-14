@@ -11,8 +11,16 @@
 
 int check_port(char* port);
 
+char* proc_file(char* fDest);
+
 int tcp_file_receive(char* prog, int serverFd, char* fName);
+int udp_file_receive(char* prog, int recvFd, char* fName, struct sockaddr recvAddr, socklen_t recvLen);
+
 int tcp_file_transmit(char* prog, int clientFd, char* fName);
+int udp_file_transmit(char* prog, int transFd, char* fName, struct sockaddr transAddr, socklen_t transLen);
 
 char* tcp_array_receive(char* prog, int serverFd);
+char* udp_array_receive(char* prog, int recvFd, struct sockaddr recvAddr, socklen_t recvLen);
+
 int tcp_array_transmit(char* prog, int clientFd, char* fDest);
+int udp_array_transmit(char* prog, int transFd, char* fDest, struct sockaddr transAddr, socklen_t transLen);
