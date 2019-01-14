@@ -351,6 +351,7 @@ char* udp_array_receive(char* prog, int hostFd, int recvFd, struct sockaddr recv
         printf("%s: failed to receive file size\n", prog);
         return NULL;
     }
+    printf("file size %d\n", fSize);
 
     fDest = calloc(fSize, sizeof(char));
     if (fDest == NULL) {
