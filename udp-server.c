@@ -171,7 +171,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (strcmp(message, "get") == 0) {
-            get_file(clientFd, *serverInfo.ai_addr, serverInfo.ai_addrlen);
+            get_file(clientFd, *clientInfo.ai_addr, clientInfo.ai_addrlen);
         }
         if (strcmp(message, "put") == 0) {
             put_file(clientFd, clientAddr, clientLen);
