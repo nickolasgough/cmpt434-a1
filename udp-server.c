@@ -155,6 +155,10 @@ int main(int argc, char* argv[]) {
             printf("udp-server: failed to receive command from client\n");
             exit(1);
         }
+        if (sendto(hostFd, "ready", INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) != - 1) {
+            printf("success!\n");
+            return;
+        }
 
         if (strcmp(message, "get") == 0) {
             get_file(hostFd, clientAddr, clientLen);
