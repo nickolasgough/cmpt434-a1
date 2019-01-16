@@ -26,7 +26,7 @@ void get_file(int hostFd, struct sockaddr_storage* clientAddr, socklen_t* client
     }
 
     sprintf(message, "%s", "ready");
-    if (sendto(hostFd, "ready", INPUT_MAX, 0, (struct sockaddr*) clientAddr, *clientLen) == - 1) {
+    if (sendto(hostFd, "ready", INPUT_MAX, 0, (struct sockaddr*) clientAddr, sizeof(*clientAddr)) == - 1) {
         printf("udp-server: failed to send get file name response\n");
         printf("Error: %d - %s\n", errno, strerror(errno));
         return;
