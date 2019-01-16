@@ -166,9 +166,8 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
         sprintf(message, "%s", "ready");
-        if (sendto(clientFd, message, INPUT_MAX, 0, &clientAddr, clientLen) != - 1) {
+        if (sendto(clientFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) >= 0) {
             printf("successfully sent reply\n");
-            return;
         }
         memset(message, 0, INPUT_MAX);
 
