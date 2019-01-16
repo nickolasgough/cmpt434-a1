@@ -285,6 +285,9 @@ int main(int argc, char* argv[]) {
             }
 
             if (strcmp(cmd, "get") == 0) {
+                if (sendto(serverFd, "get", INPUT_MAX, 0, (struct sockaddr*) serverInfo.ai_addr, serverInfo.ai_addrlen) != -1) {
+                    printf("success!\n");
+                }
                 get_file(clientFd, serverFd, serverInfo.ai_addr, serverInfo.ai_addrlen);
             }
             if (strcmp(cmd, "put") == 0) {
