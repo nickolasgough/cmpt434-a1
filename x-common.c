@@ -141,7 +141,7 @@ int udp_file_receive(char* prog, int recvFd, char* fName, struct sockaddr_storag
     printf("%s: receiving the file...\n", prog);
     while (fSize > 0) {
         rAmount = fSize > INPUT_MAX ? INPUT_MAX : fSize;
-        rSize = recvfrom(recvFd, message, INPUT_MAX, 0, (struct sockaddr*) &recvAddr, &recvLen);
+        rSize = recvfrom(recvFd, message, rAmount, 0, (struct sockaddr*) &recvAddr, &recvLen);
         if (rSize == -1) {
             printf("%s: failed to receive the whole file\n", prog);
             return 0;
