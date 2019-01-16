@@ -15,7 +15,7 @@
 #include "x-common.h"
 
 
-void get_file(int hostFd, struct sockaddr_storage* clientAddr, socklen_t* clientLen) {
+void get_file(int hostFd, struct sockaddr_storage clientAddr, socklen_t clientLen) {
     char* message;
     char* fName;
 
@@ -26,13 +26,14 @@ void get_file(int hostFd, struct sockaddr_storage* clientAddr, socklen_t* client
     }
 
     sprintf(message, "%s", "ready");
-    if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) clientAddr, *clientLen) == - 1) {
+    if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send get file name response\n");
         printf("Error: %d - %s\n", errno, strerror(errno));
         return;
     }
     memset(message, 0, INPUT_MAX);
     printf("got here\n");
+    return;
 
     if (recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) clientAddr, clientLen) == -1) {
         printf("udp-server: failed to receive get file name\n");
@@ -159,7 +160,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (strcmp(message, "get") == 0) {
-            get_file(hostFd, &clientAddr, &clientLen);
+            get_file(hostFd, clientAddr, clientLen);
         }
         if (strcmp(message, "put") == 0) {
             put_file(hostFd, clientAddr, clientLen);

@@ -209,8 +209,8 @@ int main(int argc, char* argv[]) {
     char* hPort;
     char* sName;
     char* sPort;
-    int hostTcpFd;
-    struct addrinfo hostTcpInfo;
+    int hostFd;
+    struct addrinfo hostInfo;
     int serverFd;
     struct addrinfo serverInfo;
     int clientFd;
@@ -242,16 +242,16 @@ int main(int argc, char* argv[]) {
         printf("mixed-proxy: failed to determine the name of the machine\n");
         exit(1);
     }
-    if (!tcp_socket(&hostTcpFd, &hostTcpInfo, hName, hPort)) {
+    if (!tcp_socket(&hostFd, &hostInfo, hName, hPort)) {
         printf("mixed-proxy: failed to create tcp socket for given host\n");
         exit(1);
     }
-    if (bind(hostTcpFd, hostTcpInfo.ai_addr, hostTcpInfo.ai_addrlen) == -1) {
+    if (bind(hostFd, hostInfo.ai_addr, hostInfo.ai_addrlen) == -1) {
         printf("mixed-proxy: failed to bind tcp socket for given host\n");
         exit(1);
     }
 
-    if (listen(hostTcpFd, qMax) == -1) {
+    if (listen(hostFd, qMax) == -1) {
         printf("mixed-proxy: failed to listen tcp socket for given host\n");
         exit(1);
     }
@@ -268,7 +268,7 @@ int main(int argc, char* argv[]) {
 
     while (1) {
         clientLen = sizeof(clientAddr);
-        clientFd = accept(hostTcpFd, (struct sockaddr*) &clientAddr, &clientLen);
+        clientFd = accept(hostFd, (struct sockaddr*) &clientAddr, &clientLen);
         if (clientFd == -1) {
             printf("mixed-proxy: failed to accept incoming connection on socket\n");
             exit(1);
@@ -293,7 +293,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    close(hostTcpFd);
+    close(hostFd);
     close(clientFd);
     close(serverFd);
     exit(0);
