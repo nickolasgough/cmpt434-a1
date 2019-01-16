@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    clientAddr.sin_family = AF_INET;
+    clientAddr->sin_family = AF_INET;
 
     if (recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) clientAddr, &clientLen) == -1) {
         printf("udp-server: failed to receive from client\n");
