@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    get_file(hostFd, &clientAddr, &clientLen);
+    get_file(hostFd, clientAddr, clientLen);
 
     close(hostFd);
     exit(0);
