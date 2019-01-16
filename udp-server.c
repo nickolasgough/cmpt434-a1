@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     int hostFd;
     struct addrinfo hostInfo;
     struct sockaddr_in* clientAddr;
-    socklen_t clientLen;
+    socklen_t* clientLen;
     char* message;
 
     hPort = argv[1];
@@ -52,16 +52,17 @@ int main(int argc, char* argv[]) {
 
     message = calloc(INPUT_MAX, sizeof(char));
     clientAddr = calloc(1, sizeof(struct sockaddr_in));
+    clientLen = calloc(1, sizeof(socklen_t));
     if (message == NULL || clientAddr == NULL) {
         printf("udp-server: failed to allocate necessary memory\n");
         exit(1);
     }
 
-    if (recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) clientAddr, &clientLen) == -1) {
+    if (recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) clientAddr, clientLen) == -1) {
         printf("udp-server: failed to receive from client\n");
         exit(1);
     }
-    if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) clientAddr, sizeof(struct sockaddr_in)) == -1) {
+    if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) clientAddr, *clientLen) == -1) {
         printf("udp-server: failed to reply to client\n");
         printf("Error: %d - %s\n", errno, strerror(errno));
         exit(1);
