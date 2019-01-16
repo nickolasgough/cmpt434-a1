@@ -15,7 +15,7 @@
 #include "x-common.h"
 
 
-void get_file(int hostFd, struct sockaddr_storage* clientAddr, socklen_t* clientLen) {
+void simple_func(int hostFd, struct sockaddr_storage clientAddr, socklen_t clientLen) {
     char* message;
     char* fName;
 
@@ -26,7 +26,7 @@ void get_file(int hostFd, struct sockaddr_storage* clientAddr, socklen_t* client
     }
 
     sprintf(message, "%s", "ready");
-    if (sendto(hostFd, "ready", INPUT_MAX, 0, (struct sockaddr*) clientAddr, sizeof(*clientAddr)) == - 1) {
+    if (sendto(hostFd, "ready", INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send get file name response\n");
         printf("Error: %d - %s\n", errno, strerror(errno));
         return;
@@ -42,8 +42,8 @@ int main(int argc, char* argv[]) {
     char* hPort;
     int hostFd;
     struct addrinfo hostInfo;
-    struct sockaddr_storage* clientAddr;
-    socklen_t* clientLen;
+    struct sockaddr_storage clientAddr;
+    socklen_t clientLen;
     char* message;
     int rSize;
 
@@ -59,8 +59,6 @@ int main(int argc, char* argv[]) {
     }
 
     hName = calloc(INPUT_MAX, sizeof(char));
-    clientAddr = calloc(1, sizeof(struct sockaddr_storage));
-    clientLen = calloc(1, sizeof(socklen_t));
     if (hName == NULL) {
         printf("udp-server: failed to allocate necessary memory\n");
         exit(1);
@@ -85,13 +83,13 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    rSize = recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) clientAddr, clientLen);
+    rSize = recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, &clientLen);
     if (rSize == -1) {
         printf("udp-server: failed to receive command from client\n");
         exit(1);
     }
 
-    get_file(hostFd, clientAddr, clientLen);
+    simple_func(hostFd, clientAddr, clientLen);
 
     close(hostFd);
     exit(0);
