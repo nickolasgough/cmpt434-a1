@@ -29,9 +29,6 @@ int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
-    if (mName == NULL) {
-        hints.ai_flags = AI_PASSIVE;
-    }
     sprintf(hName, "%s.usask.ca", mName);
     
     if (getaddrinfo(hName, port, &hints, &pAi) != 0) {
@@ -67,9 +64,6 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_protocol = IPPROTO_UDP;
-    if (mName == NULL) {
-        hints.ai_flags = AI_PASSIVE;
-    }
     sprintf(hName, "%s.usask.ca", mName);
     
     if (getaddrinfo(hName, port, &hints, &pAi) != 0) {
