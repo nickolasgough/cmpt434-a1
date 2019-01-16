@@ -157,7 +157,6 @@ int main(int argc, char* argv[]) {
         }
         if (sendto(hostFd, "ready", INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) != - 1) {
             printf("success!\n");
-            return;
         }
 
         if (strcmp(message, "get") == 0) {
