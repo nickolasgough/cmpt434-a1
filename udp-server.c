@@ -107,9 +107,11 @@ int main(int argc, char* argv[]) {
     char* sName;
     char* sPort;
     int hostFd;
-    struct addrinfo serverInfo;
+    struct addrinfo hostInfo;
     int clientFd;
     struct addrinfo clientInfo;
+    struct sockaddr_in clientAddr;
+    socklen_t clientLen;
     char* message;
     int rSize;
 
@@ -136,12 +138,12 @@ int main(int argc, char* argv[]) {
         printf("udp-server: failed to determine the name of the machine\n");
         exit(1);
     }
-    if (!udp_socket(&hostFd, &serverInfo, hName, hPort)) {
+    if (!udp_socket(&hostFd, &hostInfo, hName, hPort)) {
         printf("udp-server: failed to create udp socket for given host\n");
         exit(1);
     }
 
-    if (bind(hostFd, serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
+    if (bind(hostFd, hostInfo.ai_addr, hostInfo.ai_addrlen) == -1) {
         printf("udp-server: failed to bind udp socket for given host\n");
         exit(1);
     }
@@ -158,11 +160,17 @@ int main(int argc, char* argv[]) {
     }
 
     while (1) {
-        rSize = recvfrom(hostFd, message, INPUT_MAX, 0, NULL, NULL);
+        rSize = recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, &clientLen);
         if (rSize == -1) {
             printf("udp-server: failed to receive command from client\n");
             exit(1);
         }
+        sprintf(message, "%s", "ready");
+        if (sendto(clientFd, message, INPUT_MAX, 0, &clientAddr, clientLen) != - 1) {
+            printf("successfully sent reply\n");
+            return;
+        }
+        memset(message, 0, INPUT_MAX);
 
         if (strcmp(message, "get") == 0) {
             get_file(hostFd, clientFd, *clientInfo.ai_addr, clientInfo.ai_addrlen);
