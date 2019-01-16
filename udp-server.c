@@ -66,6 +66,16 @@ int main(int argc, char* argv[]) {
         printf("Error: %d - %s\n", errno, strerror(errno));
         exit(1);
     }
+    if (recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, &clientLen) == -1) {
+        printf("udp-server: failed to receive from client\n");
+        exit(1);
+    }
+    printf("%s\n", message);
+    if (sendto(hostFd, "hello", INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == -1) {
+        printf("udp-server: failed to reply to client\n");
+        printf("Error: %d - %s\n", errno, strerror(errno));
+        exit(1);
+    }
 
     close(hostFd);
     exit(0);
