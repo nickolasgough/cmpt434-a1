@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <string.h>
+#include <errno.h>
 
 #include "x-sockets.h"
 #include "x-common.h"
@@ -27,6 +28,7 @@ void get_file(int hostFd, struct sockaddr_storage clientAddr, socklen_t clientLe
     sprintf(message, "%s", "ready");
     if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, sizeof(clientAddr)) == - 1) {
         printf("udp-server: failed to send get file name response\n");
+        printf("Error: %d - %s\n", errno, strerror(errno));
         return;
     }
     memset(message, 0, INPUT_MAX);
