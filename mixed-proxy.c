@@ -32,13 +32,22 @@ void get_file(int clientFd, int serverFd, struct addrinfo* serverInfo) {
         return;
     }
 
-    /* Initiate request with client */
-    sprintf(message, "%s", "ready");
-    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-        printf("mixed-proxy: failed to send get file name response\n");
+    /* Initiate request with server */
+    sprintf(message, "%s", "get");
+    if (sendto(serverFd, message, INPUT_MAX, 0, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1) {
+        printf("mixed-proxy: failed to transmit the get command\n");
+        return;
+    }
+    if (recvfrom(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) &serverAddr, &serverLen) == -1) {
+        printf("mixed-proxy: failed to receive get command response\n");
+        return;
+    }
+    if (strcmp(message, "ready") != 0) {
+        printf("mixed-proxy: received unexpected get command response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
+    printf("got here\n");
 }
 
 
