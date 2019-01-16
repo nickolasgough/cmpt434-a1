@@ -36,7 +36,7 @@ int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     if (getaddrinfo(hName, port, &hints, &pAi) != 0) {
         return 0;
     }
-    if (pAi->ai_socktype != SOCK_STREAM) {
+    if (pAi->ai_family != AF_INET || pAi->ai_socktype != SOCK_STREAM) {
         return 0;
     }
     
@@ -73,7 +73,7 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     if (getaddrinfo(hName, port, &hints, &pAi) != 0) {
         return 0;
     }
-    if (pAi->ai_socktype != SOCK_DGRAM) {
+    if (pAi->ai_family != AF_INET || pAi->ai_socktype != SOCK_DGRAM) {
         return 0;
     }
     
