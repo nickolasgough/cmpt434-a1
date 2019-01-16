@@ -14,7 +14,7 @@
 #include "x-common.h"
 
 
-void get_file(int hostFd, int clientFd, struct sockaddr clientAddr, socklen_t clientLen) {
+void get_file(int hostFd, struct sockaddr_storage clientAddr, socklen_t clientLen) {
     char* message;
     char* fName;
 
@@ -25,13 +25,13 @@ void get_file(int hostFd, int clientFd, struct sockaddr clientAddr, socklen_t cl
     }
 
     sprintf(message, "%s", "ready");
-    if (sendto(clientFd, message, INPUT_MAX, 0, &clientAddr, clientLen) == - 1) {
+    if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send get file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
-    if (recvfrom(hostFd, fName, INPUT_MAX, 0, NULL, NULL) == -1) {
+    if (recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, &clientLen) == -1) {
         printf("udp-server: failed to receive get file name\n");
         return;
     }
@@ -39,7 +39,7 @@ void get_file(int hostFd, int clientFd, struct sockaddr clientAddr, socklen_t cl
     if (access(fName, F_OK)) {
         printf("udp-server: file %s does not exist\n", fName);
         sprintf(message, "%s", "error");
-        if (sendto(clientFd, message, INPUT_MAX, 0, &clientAddr, clientLen) == -1) {
+        if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == -1) {
             printf("udp-server: failed to send file does not exist error\n");
         }
         return;
@@ -47,17 +47,17 @@ void get_file(int hostFd, int clientFd, struct sockaddr clientAddr, socklen_t cl
     memset(message, 0, INPUT_MAX);
 
     sprintf(message, "%s", "ready");
-    if (sendto(clientFd, message, INPUT_MAX, 0, &clientAddr, clientLen) == -1) {
+    if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == -1) {
         printf("udp-server: failed to send get file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
-    udp_file_transmit("udp-server", hostFd, clientFd, fName, clientAddr, clientLen);
+    udp_file_transmit("udp-server", hostFd, fName, clientAddr, clientLen);
 }
 
 
-void put_file(int hostFd, int clientFd, struct sockaddr clientAddr, socklen_t clientLen)  {
+void put_file(int hostFd, struct sockaddr_storage clientAddr, socklen_t clientLen)  {
     char* message;
     char* fName;
 
@@ -69,13 +69,13 @@ void put_file(int hostFd, int clientFd, struct sockaddr clientAddr, socklen_t cl
     }
 
     sprintf(message, "%s", "ready");
-    if (sendto(clientFd, message, INPUT_MAX, 0, &clientAddr, clientLen) == - 1) {
+    if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send put file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
-    if (recvfrom(hostFd, fName, INPUT_MAX, 0, NULL, NULL) == -1) {
+    if (recvfrom(hostFd, fName, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, &clientLen) == -1) {
         printf("udp-server: failed to receive put file name\n");
         return;
     }
@@ -83,7 +83,7 @@ void put_file(int hostFd, int clientFd, struct sockaddr clientAddr, socklen_t cl
     if (!access(fName, F_OK)) {
         printf("udp-server: file %s already exists\n", fName);
         sprintf(message, "%s", "error");
-        if (sendto(clientFd, message, INPUT_MAX, 0, &clientAddr, clientLen) == -1) {
+        if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == -1) {
             printf("udp-server: failed to send file exists error\n");
         }
         return;
@@ -91,37 +91,33 @@ void put_file(int hostFd, int clientFd, struct sockaddr clientAddr, socklen_t cl
     memset(message, 0, INPUT_MAX);
 
     sprintf(message, "%s", "ready");
-    if (sendto(clientFd, message, INPUT_MAX, 0, &clientAddr, clientLen) == - 1) {
+    if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send put file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
-    udp_file_receive("udp-server", hostFd, clientFd, fName, clientAddr, clientLen);
+    udp_file_receive("udp-server", hostFd, fName, clientAddr, clientLen);
 }
 
 
 int main(int argc, char* argv[]) {
     char* hName;
     char* hPort;
-    char* sName;
-    char* sPort;
     int hostFd;
-    struct addrinfo serverInfo;
-    int clientFd;
-    struct addrinfo clientInfo;
+    struct addrinfo hostInfo;
+    struct sockaddr_storage clientAddr;
+    socklen_t clientLen;
     char* message;
     int rSize;
 
-    if (argc != 4) {
-        printf("usage: ./udp-server <host port> <client name> <client port>\n");
+    if (argc != 2) {
+        printf("usage: ./udp-server <host port>\n");
         exit(1);
     }
 
     hPort = argv[1];
-    sName = argv[2];
-    sPort = argv[3];
-    if (!check_port(hPort) || !check_port(sPort)) {
+    if (!check_port(hPort)) {
         printf("udp-server: port number must be between 30000 and 40000\n");
         exit(1);
     }
@@ -136,18 +132,12 @@ int main(int argc, char* argv[]) {
         printf("udp-server: failed to determine the name of the machine\n");
         exit(1);
     }
-    if (!udp_socket(&hostFd, &serverInfo, hName, hPort)) {
+    if (!udp_socket(&hostFd, &hostInfo, hName, hPort)) {
         printf("udp-server: failed to create udp socket for given host\n");
         exit(1);
     }
-
-    if (bind(hostFd, serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
+    if (bind(hostFd, hostInfo.ai_addr, hostInfo.ai_addrlen) == -1) {
         printf("udp-server: failed to bind udp socket for given host\n");
-        exit(1);
-    }
-
-    if (!udp_socket(&clientFd, &clientInfo, sName, sPort)) {
-        printf("udp-server: failed to create udp socket for given client\n");
         exit(1);
     }
 
@@ -158,17 +148,17 @@ int main(int argc, char* argv[]) {
     }
 
     while (1) {
-        rSize = recvfrom(hostFd, message, INPUT_MAX, 0, NULL, NULL);
+        rSize = recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, &clientLen);
         if (rSize == -1) {
             printf("udp-server: failed to receive command from client\n");
             exit(1);
         }
 
         if (strcmp(message, "get") == 0) {
-            get_file(hostFd, clientFd, *clientInfo.ai_addr, clientInfo.ai_addrlen);
+            get_file(hostFd, clientAddr, clientLen);
         }
         if (strcmp(message, "put") == 0) {
-            put_file(hostFd, clientFd, *clientInfo.ai_addr, clientInfo.ai_addrlen);
+            put_file(hostFd, clientAddr, clientLen);
         }
     }
 
