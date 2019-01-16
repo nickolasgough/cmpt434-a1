@@ -15,10 +15,6 @@
 #include "x-common.h"
 
 
-struct sockaddr_storage clientAddr;
-socklen_t clientLen;
-
-
 void get_file(int hostFd) {
     char* message;
     char* fName;
@@ -46,6 +42,8 @@ int main(int argc, char* argv[]) {
     char* hPort;
     int hostFd;
     struct addrinfo hostInfo;
+    struct sockaddr_storage clientAddr;
+    socklen_t clientLen;
     char* message;
     int rSize;
 
