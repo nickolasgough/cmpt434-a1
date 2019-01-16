@@ -35,6 +35,7 @@ void get_file(int hostFd, struct sockaddr_storage clientAddr, socklen_t clientLe
         printf("udp-server: failed to receive get file name\n");
         return;
     }
+    printf("got here\n");
 
     if (access(fName, F_OK)) {
         printf("udp-server: file %s does not exist\n", fName);

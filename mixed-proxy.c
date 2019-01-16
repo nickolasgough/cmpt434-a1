@@ -65,6 +65,7 @@ void get_file(int clientFd, int serverFd, struct sockaddr_storage* serverAddr, s
         return;
     }
     memset(message, 0, INPUT_MAX);
+    printf("got here\n");
 
     if (sendto(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) serverAddr, serverLen) == -1) {
         printf("mixed-proxy: failed to transmit the get file name\n");
