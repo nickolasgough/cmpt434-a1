@@ -91,8 +91,10 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    if (strcmp(message, "get") == 0) {
-        get_file(hostFd);
+    if (sendto(hostFd, "ready", INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == - 1) {
+        printf("udp-server: failed to send get file name response\n");
+        printf("Error: %d - %s\n", errno, strerror(errno));
+        return;
     }
 
 
