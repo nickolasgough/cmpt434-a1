@@ -34,31 +34,6 @@ void get_file(int hostFd, struct sockaddr_storage clientAddr, socklen_t clientLe
     memset(message, 0, INPUT_MAX);
     printf("got here\n");
     return;
-
-    if (recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) clientAddr, clientLen) == -1) {
-        printf("udp-server: failed to receive get file name\n");
-        return;
-    }
-    printf("got here\n");
-
-    if (access(fName, F_OK)) {
-        printf("udp-server: file %s does not exist\n", fName);
-        sprintf(message, "%s", "error");
-        if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) clientAddr, *clientLen) == -1) {
-            printf("udp-server: failed to send file does not exist error\n");
-        }
-        return;
-    }
-    memset(message, 0, INPUT_MAX);
-
-    sprintf(message, "%s", "ready");
-    if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) clientAddr, *clientLen) == -1) {
-        printf("udp-server: failed to send get file name response\n");
-        return;
-    }
-    memset(message, 0, INPUT_MAX);
-
-    udp_file_transmit("udp-server", hostFd, fName, *clientAddr, *clientLen);
 }
 
 
