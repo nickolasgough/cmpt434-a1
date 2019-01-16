@@ -15,7 +15,7 @@
 #include "x-common.h"
 
 
-void get_file(int hostFd) {
+void get_file(int hostFd, struct sockaddr_storage clientAddr, socklen_t clientLen) {
     char* message;
     char* fName;
 
