@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
     char* hPort;
     int hostFd;
     struct addrinfo hostInfo;
-    struct sockaddr clientAddr;
+    struct sockaddr_storage clientAddr;
     socklen_t clientLen;
     char* message;
 
