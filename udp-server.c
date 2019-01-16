@@ -89,9 +89,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    if (strcmp(message, "get") == 0) {
-        get_file(hostFd, clientAddr, clientLen);
-    }
+    get_file(hostFd, clientAddr, clientLen);
 
 
     close(hostFd);
