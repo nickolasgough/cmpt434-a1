@@ -14,14 +14,14 @@
 #define INPUT_MAX 1000
 
 
-int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
+int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* hPort) {
     char* hName;
     struct addrinfo* pAi;
     struct addrinfo hints;
     int sockFd;
     
     hName = calloc(INPUT_MAX, sizeof(char));
-    if (hName == NULL || port == NULL) {
+    if (hName == NULL || hPort == NULL) {
         return 0;
     }
     
@@ -31,7 +31,7 @@ int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     hints.ai_protocol = IPPROTO_TCP;
     sprintf(hName, "%s.usask.ca", mName);
     
-    if (getaddrinfo(hName, port, &hints, &pAi) != 0) {
+    if (getaddrinfo(hName, hPort, &hints, &pAi) != 0) {
         return 0;
     }
     if (pAi->ai_family != AF_INET || pAi->ai_socktype != SOCK_STREAM || pAi->ai_protocol != IPPROTO_TCP) {
@@ -49,14 +49,14 @@ int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
 }
 
 
-int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
+int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* hPort) {
     char* hName;
     struct addrinfo* pAi;
     struct addrinfo hints;
     int sockFd;
     
     hName = calloc(INPUT_MAX, sizeof(char));
-    if (hName == NULL || port == NULL) {
+    if (hName == NULL || hPort == NULL) {
         return 0;
     }
     
@@ -66,7 +66,7 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     hints.ai_protocol = IPPROTO_UDP;
     sprintf(hName, "%s.usask.ca", mName);
     
-    if (getaddrinfo(hName, port, &hints, &pAi) != 0) {
+    if (getaddrinfo(hName, hPort, &hints, &pAi) != 0) {
         return 0;
     }
     if (pAi->ai_family != AF_INET || pAi->ai_socktype != SOCK_DGRAM || pAi->ai_protocol != IPPROTO_UDP) {
