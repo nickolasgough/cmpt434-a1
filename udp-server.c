@@ -30,6 +30,7 @@ void get_file(int hostFd, struct sockaddr_storage* clientAddr, socklen_t clientL
         return;
     }
     memset(message, 0, INPUT_MAX);
+    printf("got here\n");
 
     if (recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) clientAddr, &clientLen) == -1) {
         printf("udp-server: failed to receive get file name\n");
