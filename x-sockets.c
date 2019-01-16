@@ -26,7 +26,7 @@ int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     }
     
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = PF_INET;
+    hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     if (mName == NULL) {
         hints.ai_flags = AI_PASSIVE;
@@ -63,7 +63,7 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     }
     
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = PF_INET;
+    hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_DGRAM;
     if (mName == NULL) {
         hints.ai_flags = AI_PASSIVE;

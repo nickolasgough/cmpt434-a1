@@ -56,7 +56,7 @@ void get_file(int hostFd, int clientFd, int serverFd, struct sockaddr serverAddr
         printf("mixed-proxy: failed to transmit the get command\n");
         return;
     }
-    if (recvfrom(hostFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
+    if (recvfrom(serverFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("mixed-proxy: failed to receive get command response\n");
         return;
     }
