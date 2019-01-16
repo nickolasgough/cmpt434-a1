@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    if (sendto(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
+    if (sendto(serverFd, "hello", INPUT_MAX, 0, (struct sockaddr*) serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
         printf("x-client: failed to send to server\n");
         exit(1);
     }
@@ -52,6 +52,7 @@ int main(int argc, char* argv[]) {
         printf("x-client: failed to receive from server\n");
         exit(1);
     }
+    printf("%s\n", message);
 
     close(serverFd);
     exit(0);
