@@ -152,12 +152,12 @@ int main(int argc, char* argv[]) {
     }
 
     while (1) {
-        rSize = recvfrom(hostFd, message, INPUT_MAX, MSG_WAITALL, (struct sockaddr*) &clientAddr, &clientLen);
+        rSize = recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, &clientLen);
         if (rSize == -1) {
             printf("udp-server: failed to receive command from client\n");
             exit(1);
         }
-        if (sendto(hostFd, "ready", INPUT_MAX, MSG_CONFIRM, (struct sockaddr*) &clientAddr, clientLen) != - 1) {
+        if (sendto(hostFd, "ready", INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) != - 1) {
             printf("success!\n");
         }
 
