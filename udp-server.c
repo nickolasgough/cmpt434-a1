@@ -83,16 +83,14 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    while (1) {
-        rSize = recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, &clientLen);
-        if (rSize == -1) {
-            printf("udp-server: failed to receive command from client\n");
-            exit(1);
-        }
+    rSize = recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, &clientLen);
+    if (rSize == -1) {
+        printf("udp-server: failed to receive command from client\n");
+        exit(1);
+    }
 
-        if (strcmp(message, "get") == 0) {
-            get_file(hostFd, clientAddr, clientLen);
-        }
+    if (strcmp(message, "get") == 0) {
+        get_file(hostFd, clientAddr, clientLen);
     }
 
 
