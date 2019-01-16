@@ -287,7 +287,7 @@ int main(int argc, char* argv[]) {
                 get_file(clientFd, serverFd, *serverInfo.ai_addr, serverInfo.ai_addrlen);
             }
             if (strcmp(cmd, "put") == 0) {
-                put_file(clientFd, serverFd, serverInfo.ai_addr, serverInfo.ai_addrlen);
+                put_file(clientFd, serverFd, (struct sockaddr_storage) serverInfo.ai_addr, serverInfo.ai_addrlen);
             }
         }
     }

@@ -55,7 +55,7 @@ void get_file(int hostFd, struct sockaddr_storage clientAddr, socklen_t clientLe
     }
     memset(message, 0, INPUT_MAX);
 
-    udp_file_transmit("udp-server", hostFd, fName, *clientAddr, clientLen);
+    udp_file_transmit("udp-server", hostFd, fName, clientAddr, clientLen);
 }
 
 
