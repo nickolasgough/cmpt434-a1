@@ -17,11 +17,12 @@
 #define TEMP1 "temp1.txt"
 
 
-void get_file(int clientFd, int serverFd, struct sockaddr_storage* serverAddr, socklen_t serverLen) {
+void get_file(int clientFd, int serverFd, struct sockaddr serverAddr, socklen_t serverLen) {
     char* message;
     char* fName = NULL;
     char* fDest = NULL;
     char* tDest = NULL;
+    struct sockaddr_storage storageAddr;
 
     message = calloc(INPUT_MAX, sizeof(char));
     fName = calloc(INPUT_MAX, sizeof(char));
@@ -52,11 +53,11 @@ void get_file(int clientFd, int serverFd, struct sockaddr_storage* serverAddr, s
 
     /* Initiate request with server */
     sprintf(message, "%s", "get");
-    if (sendto(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) serverAddr, serverLen) == -1) {
+    if (sendto(serverFd, message, INPUT_MAX, 0, serverAddr, serverLen) == -1) {
         printf("mixed-proxy: failed to transmit the get command\n");
         return;
     }
-    if (recvfrom(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) serverAddr, &serverLen) == -1) {
+    if (recvfrom(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) &storageAddr, &serverLen) == -1) {
         printf("mixed-proxy: failed to receive get command response\n");
         return;
     }
@@ -71,7 +72,7 @@ void get_file(int clientFd, int serverFd, struct sockaddr_storage* serverAddr, s
         printf("mixed-proxy: failed to transmit the get file name\n");
         return;
     }
-    if (recvfrom(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) serverAddr, &serverLen) == -1) {
+    if (recvfrom(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) &storageAddr, &serverLen) == -1) {
         printf("mixed-proxy: failed to receive get file name response\n");
         return;
     }
@@ -82,7 +83,7 @@ void get_file(int clientFd, int serverFd, struct sockaddr_storage* serverAddr, s
     memset(message, 0, INPUT_MAX);
 
     /* Receive file contents from server */
-    fDest = udp_array_receive("mixed-proxy", serverFd, *serverAddr, serverLen);
+    fDest = udp_array_receive("mixed-proxy", serverFd, storageAddr, serverLen);
     if (fDest == NULL) {
         printf("mixed-proxy: failed to receive the file from the server\n");
         sprintf(message, "%s", "error");
@@ -283,10 +284,10 @@ int main(int argc, char* argv[]) {
             }
 
             if (strcmp(cmd, "get") == 0) {
-                get_file(clientFd, serverFd, (struct sockaddr_storage*) (serverInfo.ai_addr), serverInfo.ai_addrlen);
+                get_file(clientFd, serverFd, serverInfo.ai_addr, serverInfo.ai_addrlen);
             }
             if (strcmp(cmd, "put") == 0) {
-                put_file(clientFd, serverFd, (struct sockaddr_storage*) (serverInfo.ai_addr), serverInfo.ai_addrlen);
+                put_file(clientFd, serverFd, serverInfo.ai_addr, serverInfo.ai_addrlen);
             }
         }
     }
