@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
     char* hName;
     char* port;
     int sockFd;
-    struct addrinfo sockInfo;
+    struct addrinfo* sockInfo;
     int clientFd;
     struct sockaddr clientAddr;
     socklen_t clientLen;
@@ -139,7 +139,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    if (bind(sockFd, sockInfo.ai_addr, sockInfo.ai_addrlen) == -1) {
+    if (bind(sockFd, sockInfo->ai_addr, sockInfo->ai_addrlen) == -1) {
         printf("tcp-server: failed to bind tcp socket for given host\n");
         exit(1);
     }

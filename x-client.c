@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
     char* hName;
     char* port;
     int serverFd;
-    struct addrinfo sockInfo;
+    struct addrinfo* sockInfo;
 
     if (argc != 3) {
         printf("usage: ./x-client <host name> <port number>\n");
@@ -140,7 +140,7 @@ int main(int argc, char* argv[]) {
         printf("x-client: failed to create tcp socket for given host\n");
         exit(1);
     }
-    if (connect(serverFd, sockInfo.ai_addr, sockInfo.ai_addrlen) == -1) {
+    if (connect(serverFd, sockInfo->ai_addr, sockInfo->ai_addrlen) == -1) {
         printf("x-client: failed to connect tcp socket for given host\n");
         exit(1);
     }

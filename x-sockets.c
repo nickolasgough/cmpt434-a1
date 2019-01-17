@@ -14,7 +14,7 @@
 #define INPUT_MAX 1000
 
 
-int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
+int tcp_socket(int* outFd, struct addrinfo** outInfo, char* mName, char* port) {
     char* hName;
     struct addrinfo* pAi;
     struct addrinfo hints;
@@ -47,12 +47,12 @@ int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     }
     
     *outFd = sockFd;
-    *outInfo = *pAi;
+    *outInfo = pAi;
     return 1;
 }
 
 
-int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
+int udp_socket(int* outFd, struct addrinfo** outInfo, char* mName, char* port) {
     char* hName;
     struct addrinfo* pAi;
     struct addrinfo hints;
@@ -85,6 +85,6 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     }
     
     *outFd = sockFd;
-    *outInfo = *pAi;
+    *outInfo = pAi;
     return 1;
 }

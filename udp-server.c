@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
     char* hName;
     char* hPort;
     int hostFd;
-    struct addrinfo hostInfo;
+    struct addrinfo* hostInfo;
     struct sockaddr_storage clientAddr;
     socklen_t clientLen;
     char* message;
@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
         printf("udp-server: failed to create udp socket for given host\n");
         exit(1);
     }
-    if (bind(hostFd, hostInfo.ai_addr, hostInfo.ai_addrlen) == -1) {
+    if (bind(hostFd, hostInfo->ai_addr, hostInfo->ai_addrlen) == -1) {
         printf("udp-server: failed to bind udp socket for given host\n");
         exit(1);
     }

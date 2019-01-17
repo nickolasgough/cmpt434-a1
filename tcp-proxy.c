@@ -207,9 +207,9 @@ int main(int argc, char* argv[]) {
     char* sName;
     char* sPort;
     int serverFd;
-    struct addrinfo serverInfo;
+    struct addrinfo* serverInfo;
     int hostFd;
-    struct addrinfo hostInfo;
+    struct addrinfo* hostInfo;
     int clientFd;
     struct sockaddr clientAddr;
     socklen_t clientLen;
@@ -243,7 +243,7 @@ int main(int argc, char* argv[]) {
         printf("tcp-proxy: failed to create tcp socket for given host\n");
         exit(1);
     }
-    if (bind(hostFd, hostInfo.ai_addr, hostInfo.ai_addrlen) == -1) {
+    if (bind(hostFd, hostInfo->ai_addr, hostInfo->ai_addrlen) == -1) {
         printf("tcp-proxy: failed to bind tcp socket for given host\n");
         exit(1);
     }
@@ -252,7 +252,7 @@ int main(int argc, char* argv[]) {
         printf("tcp-proxy: failed to create tcp socket for given host\n");
         exit(1);
     }
-    if (connect(serverFd, serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
+    if (connect(serverFd, serverInfo->ai_addr, serverInfo->ai_addrlen) == -1) {
         printf("tcp-proxy: failed to connect tcp socket for given host\n");
         exit(1);
     }
