@@ -27,16 +27,19 @@ void get_file(int hostFd, struct sockaddr_storage storageAddr, socklen_t storage
     }
 
     sprintf(message, "%s", "ready");
+    printf("sending\n");
     if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send get file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
+    printf("receiving\n");
     if (recvfrom(hostFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("udp-server: failed to receive get file name\n");
         return;
     }
+    printf("received\n");
 
     if (access(fName, F_OK)) {
         printf("udp-server: file %s does not exist\n", fName);
