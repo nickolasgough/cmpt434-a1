@@ -89,8 +89,6 @@ int main(int argc, char* argv[]) {
         return 2;
     }
 
-    freeaddrinfo(servinfo);
-
     message = calloc(INPUT_MAX, sizeof(char));
     if (message == NULL) {
         printf("udp-server: failed to allocate necessary memory\n");
