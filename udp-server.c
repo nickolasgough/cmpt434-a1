@@ -92,5 +92,5 @@ int main(int argc, char* argv[]) {
     handle(hostFd, clientAddr, clientLen);
 
     close(hostFd);
-    exit(0);
+    return 0;
 }

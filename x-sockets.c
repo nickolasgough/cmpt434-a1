@@ -70,7 +70,7 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     if (mName != NULL) {
         sprintf(hName, "%s.usask.ca", mName);
     }
-    if (getaddrinfo(NULL, port, &hints, &pAi) != 0) {
+    if (getaddrinfo(hName, port, &hints, &pAi) != 0) {
         return 0;
     }
     if (pAi->ai_socktype != SOCK_DGRAM || pAi->ai_protocol != IPPROTO_UDP) {
