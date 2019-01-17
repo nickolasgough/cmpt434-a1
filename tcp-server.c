@@ -36,6 +36,7 @@ void get_file(int clientFd) {
         return;
     }
 
+    /* Check file */
     if (access(fName, F_OK)) {
         printf("tcp-server: file %s does not exist\n", fName);
         sprintf(message, "%s", "error");
@@ -53,6 +54,7 @@ void get_file(int clientFd) {
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Transmit file */
     tcp_file_transmit("tcp-server", clientFd, fName);
 }
 
@@ -80,6 +82,7 @@ void put_file(int clientFd)  {
         return;
     }
 
+    /* Check file */
     if (!access(fName, F_OK)) {
         printf("tcp-server: file %s already exists\n", fName);
         sprintf(message, "%s", "error");
@@ -97,6 +100,7 @@ void put_file(int clientFd)  {
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Receive file */
     tcp_file_receive("tcp-server", clientFd, fName);
 }
 
@@ -118,6 +122,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    /* Arguments and binding */
     port = argv[1];
     if (!check_port(port)) {
         printf("tcp-server: port number must be between 30000 and 40000\n");
@@ -148,12 +153,12 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    /* Interact with client */
     message = calloc(INPUT_MAX, sizeof(char));
     if (message == NULL) {
         printf("tcp-server: failed to allocate necessary memory\n");
         exit(1);
     }
-
     while (1) {
         clientLen = sizeof(clientAddr);
         clientFd = accept(sockFd, &clientAddr, &clientLen);

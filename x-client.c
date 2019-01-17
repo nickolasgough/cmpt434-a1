@@ -28,6 +28,7 @@ void get_file(int serverFd, char* lFile, char* rFile) {
         return;
     }
 
+    /* Issue get request */
     sprintf(message, "%s", "get");
     if (send(serverFd, message, INPUT_MAX, 0) == -1) {
         printf("x-client: failed to transmit the get command\n");
@@ -43,6 +44,7 @@ void get_file(int serverFd, char* lFile, char* rFile) {
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Send file name */
     if (send(serverFd, rFile, INPUT_MAX, 0) == -1) {
         printf("x-client: failed to transmit the get file name\n");
         return;
@@ -57,13 +59,13 @@ void get_file(int serverFd, char* lFile, char* rFile) {
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Receive the file */
     tcp_file_receive("x-client", serverFd, lFile);
 }
 
 
 void put_file(int serverFd, char* lFile, char* rFile) {
     char* message;
-    FILE* fPtr;
 
     if (access(lFile, F_OK)) {
         printf("x-client: file %s does not exist\n", lFile);
@@ -76,12 +78,7 @@ void put_file(int serverFd, char* lFile, char* rFile) {
         return;
     }
 
-    fPtr = fopen(lFile, "r");
-    if (fPtr == NULL) {
-        printf("x-client: failed to open file %s", lFile);
-        return;
-    }
-
+    /* Issue get request */
     sprintf(message, "%s", "put");
     if (send(serverFd, message, INPUT_MAX, 0) == -1) {
         printf("x-client: failed to transmit the put command\n");
@@ -97,6 +94,7 @@ void put_file(int serverFd, char* lFile, char* rFile) {
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Send file name */
     if (send(serverFd, rFile, INPUT_MAX, 0) == -1) {
         printf("x-client: failed to transmit the put file name\n");
         return;
@@ -119,8 +117,8 @@ int main(int argc, char* argv[]) {
     char* cmd;
     char* lFile;
     char* rFile;
-    char* hName;
-    char* port;
+    char* sName;
+    char* sPort;
     int serverFd;
     struct addrinfo* sockInfo;
 
@@ -129,14 +127,14 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    hName = argv[1];
-    port = argv[2];
-    if (!check_port(port)) {
+    /* Arguments and connect */
+    sName = argv[1];
+    sPort = argv[2];
+    if (!check_port(sPort)) {
         printf("x-client: port number must be between 30000 and 40000\n");
         exit(1);
     }
-
-    if (!tcp_socket(&serverFd, &sockInfo, hName, port)) {
+    if (!tcp_socket(&serverFd, &sockInfo, sName, sPort)) {
         printf("x-client: failed to create tcp socket for given host\n");
         exit(1);
     }
@@ -145,6 +143,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    /* Interact with user */
     cmd = calloc(INPUT_MAX, sizeof(char));
     lFile = calloc(INPUT_MAX, sizeof(char));
     rFile = calloc(INPUT_MAX, sizeof(char));
@@ -152,7 +151,6 @@ int main(int argc, char* argv[]) {
         printf("x-client: failed to allocate necessary memory\n");
         exit(1);
     }
-
     while (1) {
         printf("x-client? ");
 

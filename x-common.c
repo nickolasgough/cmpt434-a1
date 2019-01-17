@@ -38,6 +38,7 @@ char* proc_file(char* fDest) {
         return NULL;
     }
 
+    /* Transfer data */
     fIndex = 0;
     tIndex = 0;
     while (fIndex < fSize) {
@@ -46,6 +47,7 @@ char* proc_file(char* fDest) {
         fIndex += 1;
         tIndex += 1;
 
+        /* Transform data */
         if (c == 'c' || c == 'm' || c == 'p' || c == 't') {
             tDest[tIndex] = c;
             tIndex += 1;
@@ -87,6 +89,7 @@ int tcp_file_receive(char* prog, int recvFd, char* fName) {
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Receive the file */
     printf("%s: receiving the file...\n", prog);
     while (fSize > 0) {
         rAmount = fSize > INPUT_MAX ? INPUT_MAX : fSize;
@@ -138,6 +141,7 @@ int udp_file_receive(char* prog, int recvFd, char* fName, struct sockaddr* recvA
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Receive the file */
     printf("%s: receiving the file...\n", prog);
     while (fSize > 0) {
         rAmount = fSize > INPUT_MAX ? INPUT_MAX : fSize;
@@ -200,6 +204,7 @@ int tcp_file_transmit(char* prog, int transFd, char* fName) {
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Transmit the file */
     printf("%s: transmitting the file...\n", prog);
     while (fread(message, sizeof(char), INPUT_MAX, fPtr) > 0) {
         tAmount = fSize > INPUT_MAX ? INPUT_MAX : fSize;
@@ -261,6 +266,7 @@ int udp_file_transmit(char* prog, int transFd, char* fName, struct sockaddr* tra
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Transmit the file */
     printf("%s: transmitting the file...\n", prog);
     while (fread(message, sizeof(char), INPUT_MAX, fPtr) > 0) {
         tAmount = fSize > INPUT_MAX ? INPUT_MAX : fSize;
@@ -312,6 +318,7 @@ char* tcp_array_receive(char* prog, int recvFd) {
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Receive the file */
     printf("%s: receiving the file...\n", prog);
     cPos = 0;
     while (fSize > 0) {
@@ -363,6 +370,7 @@ char* udp_array_receive(char* prog, int recvFd, struct sockaddr* recvAddr, sockl
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Receive the file */
     printf("%s: receiving the file...\n", prog);
     cPos = 0;
     while (fSize > 0) {
@@ -411,6 +419,7 @@ int tcp_array_transmit(char* prog, int transFd, char* fDest) {
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Transmit the file */
     printf("%s: transmitting the file...\n", prog);
     cPos = 0;
     while (fSize > 0) {
@@ -459,6 +468,7 @@ int udp_array_transmit(char* prog, int transFd, char* fDest, struct sockaddr* tr
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Transmit the file */
     printf("%s: transmitting the file...\n", prog);
     cPos = 0;
     while (fSize > 0) {

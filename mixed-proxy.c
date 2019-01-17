@@ -45,13 +45,6 @@ void get_file(int clientFd, int serverFd, struct addrinfo* serverInfo) {
         return;
     }
 
-    sprintf(message, "%s", "ready");
-    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-        printf("mixed-proxy: failed to send get file name response\n");
-        return;
-    }
-    memset(message, 0, INPUT_MAX);
-
     /* Initiate request with server */
     sprintf(message, "%s", "get");
     if (sendto(serverFd, message, INPUT_MAX, 0, serverAddr, serverLen) == -1) {
@@ -83,7 +76,6 @@ void get_file(int clientFd, int serverFd, struct addrinfo* serverInfo) {
     memset(message, 0, INPUT_MAX);
 
     /* Receive file contents from server */
-    printf("receiving file!\n");
     fDest = udp_array_receive("mixed-proxy", serverFd, serverAddr, serverLen);
     if (fDest == NULL) {
         printf("mixed-proxy: failed to receive the file from the server\n");
@@ -106,6 +98,13 @@ void get_file(int clientFd, int serverFd, struct addrinfo* serverInfo) {
     }
 
     /* Send file contents to client */
+    sprintf(message, "%s", "ready");
+    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+        printf("mixed-proxy: failed to send get file name response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
     if (!tcp_array_transmit("mixed-proxy", clientFd, tDest)) {
         printf("mixed-proxy: failed tp transmit the file to the client\n");
     }
@@ -226,6 +225,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    /* Arguments and connections */
     hPort = argv[1];
     sName = argv[2];
     sPort = argv[3];
@@ -262,12 +262,12 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    /* Interact with client */
     cmd = calloc(INPUT_MAX, sizeof(char));
     if (cmd == NULL) {
         printf("mixed-proxy: failed to allocate necessary memory\n");
         exit(1);
     }
-
     while (1) {
         clientLen = sizeof(clientAddr);
         clientFd = accept(hostFd, (struct sockaddr*) &clientAddr, &clientLen);

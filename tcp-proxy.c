@@ -43,13 +43,6 @@ void get_file(int clientFd, int serverFd) {
         return;
     }
 
-    sprintf(message, "%s", "ready");
-    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to send get file name response\n");
-        return;
-    }
-    memset(message, 0, INPUT_MAX);
-
     /* Initiate request with server */
     sprintf(message, "%s", "get");
     if (send(serverFd, message, INPUT_MAX, 0) == -1) {
@@ -103,6 +96,13 @@ void get_file(int clientFd, int serverFd) {
     }
 
     /* Send file contents to client */
+    sprintf(message, "%s", "ready");
+    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+        printf("tcp-proxy: failed to send get file name response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
     if (!tcp_array_transmit("tcp-proxy", clientFd, tDest)) {
         printf("tcp-proxy: failed tp transmit the file to the client\n");
     }
@@ -206,10 +206,10 @@ int main(int argc, char* argv[]) {
     char* hPort;
     char* sName;
     char* sPort;
-    int serverFd;
-    struct addrinfo* serverInfo;
     int hostFd;
     struct addrinfo* hostInfo;
+    int serverFd;
+    struct addrinfo* serverInfo;
     int clientFd;
     struct sockaddr clientAddr;
     socklen_t clientLen;
@@ -221,6 +221,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    /* Arguments and connections */
     hPort = argv[1];
     sName = argv[2];
     sPort = argv[3];
@@ -262,12 +263,12 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    /* Interact with client */
     cmd = calloc(INPUT_MAX, sizeof(char));
     if (cmd == NULL) {
         printf("tcp-proxy: failed to allocate necessary memory\n");
         exit(1);
     }
-
     while (1) {
         clientLen = sizeof(clientAddr);
         clientFd = accept(hostFd, &clientAddr, &clientLen);

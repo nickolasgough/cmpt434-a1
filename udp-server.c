@@ -38,6 +38,7 @@ void get_file(int hostFd, struct sockaddr_storage storageAddr, socklen_t storage
         return;
     }
 
+    /* Check file */
     if (access(fName, F_OK)) {
         printf("udp-server: file %s does not exist\n", fName);
         sprintf(message, "%s", "error");
@@ -55,6 +56,7 @@ void get_file(int hostFd, struct sockaddr_storage storageAddr, socklen_t storage
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Transmit file */
     udp_file_transmit("udp-server", hostFd, fName, clientAddr, clientLen);
 }
 
@@ -72,7 +74,6 @@ void put_file(int hostFd, struct sockaddr_storage storageAddr, socklen_t storage
         return;
     }
 
-    printf("ready for the put...\n");
     sprintf(message, "%s", "ready");
     if (sendto(hostFd, message, INPUT_MAX, 0, clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send put file name response\n");
@@ -85,6 +86,7 @@ void put_file(int hostFd, struct sockaddr_storage storageAddr, socklen_t storage
         return;
     }
 
+    /* Check file */
     if (!access(fName, F_OK)) {
         printf("udp-server: file %s already exists\n", fName);
         sprintf(message, "%s", "error");
@@ -102,6 +104,7 @@ void put_file(int hostFd, struct sockaddr_storage storageAddr, socklen_t storage
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Transmit file */
     udp_file_receive("udp-server", hostFd, fName, clientAddr, clientLen);
 }
 
@@ -121,6 +124,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    /* Arguments and binding */
     hPort = argv[1];
     if (!check_port(hPort)) {
         printf("udp-server: port number must be between 30000 and 40000\n");
@@ -146,12 +150,12 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
+    /* Interact with client */
     message = calloc(INPUT_MAX, sizeof(char));
     if (message == NULL) {
         printf("udp-server: failed to allocate necessary memory\n");
         exit(1);
     }
-
     while (1) {
         clientLen = sizeof(clientAddr);
         rSize = recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, &clientLen);
