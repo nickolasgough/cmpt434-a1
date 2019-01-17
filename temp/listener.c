@@ -40,8 +40,8 @@ void report(struct sockaddr_storage * from, char* buffer, int numb){
 
 }
 
-void reply(int sfd, struct sockaddr_storage * replyhere, char* buffer, int numb){
-       sendto(sfd, buffer, numb, 0, (struct sockaddr *) replyhere, sizeof(struct sockaddr_storage));
+void reply(int sfd, struct sockaddr_storage replyhere, char* buffer, int numb){
+       sendto(sfd, buffer, numb, 0, (struct sockaddr *) &replyhere, sizeof(struct sockaddr_storage));
 
 }
 
@@ -101,7 +101,7 @@ int main(void)
 
 	report(&their_addr, buf, numbytes);
 
-	reply(sockfd, &their_addr, buf, numbytes);
+	reply(sockfd, their_addr, buf, numbytes);
 
 	close(sockfd);
 
