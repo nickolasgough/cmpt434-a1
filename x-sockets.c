@@ -52,7 +52,7 @@ int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
 
 
 int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
-    char* hName;
+    char* hName = NULL;
     struct addrinfo* pAi;
     struct addrinfo hints;
     int sockFd;
