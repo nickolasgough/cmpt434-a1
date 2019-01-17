@@ -41,7 +41,7 @@ void report(struct sockaddr_storage * from, char* buffer, int numb){
 }
 
 void reply(int sfd, struct sockaddr_storage replyhere, char* buffer, int numb){
-       sendto(sfd, buffer, numb, 0, (struct sockaddr *) &replyhere, sizeof(struct sockaddr_storage));
+       sendto(sfd, buffer, numb, 0, (struct sockaddr*) &replyhere, sizeof(struct sockaddr_storage));
 
 }
 
@@ -94,7 +94,7 @@ int main(void)
 
 	addr_len = sizeof their_addr;
 	if ((numbytes = recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,
-		(struct sockaddr *)&their_addr, &addr_len)) == -1) {
+		(struct sockaddr*) &their_addr, &addr_len)) == -1) {
 		perror("recvfrom");
 		exit(1);
 	}
