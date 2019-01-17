@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
     }
 
     addr_len = sizeof(their_addr);
-    if (recvfrom(sockfd, message, INPUT_MAX-1, 0, (struct sockaddr*) &their_addr, &addr_len) == -1) {
+    if (recvfrom(sockfd, message, INPUT_MAX, 0, (struct sockaddr*) &their_addr, &addr_len) == -1) {
         printf("udp-server: failed to receive from client\n");
         exit(1);
     }
