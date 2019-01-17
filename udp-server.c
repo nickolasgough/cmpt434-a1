@@ -55,6 +55,7 @@ void get_file(int hostFd, struct sockaddr_storage storageAddr, socklen_t storage
     }
     memset(message, 0, INPUT_MAX);
 
+    printf("transmitting file!\n");
     udp_file_transmit("udp-server", hostFd, fName, clientAddr, clientLen);
 }
 

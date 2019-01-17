@@ -83,6 +83,7 @@ void get_file(int clientFd, int serverFd, struct addrinfo* serverInfo) {
     memset(message, 0, INPUT_MAX);
 
     /* Receive file contents from server */
+    printf("receiving file!\n");
     fDest = udp_array_receive("mixed-proxy", serverFd, serverAddr, serverLen);
     if (fDest == NULL) {
         printf("mixed-proxy: failed to receive the file from the server\n");
