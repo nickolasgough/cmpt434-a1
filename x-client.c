@@ -74,6 +74,7 @@ int main(int argc, char* argv[]) {
         printf("x-client: failed to send to server\n");
         exit(1);
     }
+    handle(serverFd, serverInfo);
 
     close(serverFd);
     exit(0);
