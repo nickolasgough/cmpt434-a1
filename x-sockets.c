@@ -63,7 +63,6 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_protocol = IPPROTO_UDP;
     hints.ai_flags = AI_PASSIVE;
     sprintf(hName, "%s.usask.ca", mName);
     
