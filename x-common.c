@@ -132,7 +132,7 @@ int udp_file_receive(char* prog, int recvFd, char* fName, struct sockaddr* recvA
     }
 
     sprintf(message, "%s", "ready");
-    if (sendto(recvFd, message, INPUT_MAX, 0, (struct sockaddr*) &recvAddr, recvLen) == -1) {
+    if (sendto(recvFd, message, INPUT_MAX, 0, recvAddr, recvLen) == -1) {
         printf("%s: failed to send file size response\n", prog);
         return 0;
     }
