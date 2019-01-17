@@ -111,6 +111,13 @@ int main(int argc, char* argv[]) {
     char* message;
     int rSize;
 
+    char* fName;
+
+    FILE* fPtr;
+    long int fSize;
+    long int sSize;
+    long int tAmount;
+
     if (argc != 2) {
         printf("usage: ./udp-server <host port>\n");
         exit(1);
@@ -155,7 +162,96 @@ int main(int argc, char* argv[]) {
         }
 
         if (strcmp(message, "get") == 0) {
-            get_file(hostFd, clientAddr, clientLen);
+            /* This function cannot be invoked */
+            /* get_file(hostFd, clientAddr, clientLen); */
+
+            /* Copied and modified from get_file function */
+            message = calloc(INPUT_MAX, sizeof(char));
+            fName = calloc(INPUT_MAX, sizeof(char));
+            if (message == NULL || fName == NULL) {
+                continue;
+            }
+
+            sprintf(message, "%s", "ready");
+            if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == - 1) {
+                printf("udp-server: failed to send get file name response\n");
+                continue;
+            }
+            memset(message, 0, INPUT_MAX);
+
+            if (recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, &clientLen) == -1) {
+                printf("udp-server: failed to receive get file name\n");
+                continue;
+            }
+
+            if (access(fName, F_OK)) {
+                printf("udp-server: file %s does not exist\n", fName);
+                sprintf(message, "%s", "error");
+                if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == -1) {
+                    printf("udp-server: failed to send file does not exist error\n");
+                }
+                continue;
+            }
+            memset(message, 0, INPUT_MAX);
+
+            sprintf(message, "%s", "ready");
+            if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == -1) {
+                printf("udp-server: failed to send get file name response\n");
+                continue;
+            }
+            memset(message, 0, INPUT_MAX);
+
+            /* Copied and modified from udp_file_transmit function */
+            message = calloc(INPUT_MAX, sizeof(char));
+            if (message == NULL) {
+                printf("udp-server: failed to allocate necessary memory\n");
+                continue;
+            }
+
+            fPtr = fopen(fName, "r");
+            if (fPtr == NULL) {
+                printf("udp-server: failed to open the file\n");
+                sprintf(message, "%s", "error");
+                if (send(hostFd, message, INPUT_MAX, 0) == -1) {
+                    printf("udp-server: failed to send file open error\n");
+                }
+                continue;
+            }
+            memset(message, 0, INPUT_MAX);
+
+            fseek(fPtr, 0, SEEK_END);
+            fSize = ftell(fPtr);
+            fseek(fPtr, 0, SEEK_SET);
+
+            if (send(hostFd, &fSize, sizeof(fSize), 0) == -1) {
+                printf("udp-server: failed to send file size\n");
+                continue;
+            }
+            if (recv(hostFd, message, INPUT_MAX, 0) == -1) {
+                printf("udp-server: failed to receive file size response\n");
+                continue;
+            }
+            if (strcmp(message, "ready") != 0) {
+                printf("udp-server: received unexpected file size response\n");
+                continue;
+            }
+            memset(message, 0, INPUT_MAX);
+
+            printf("udp-server: transmitting the file...\n");
+            while (fread(message, sizeof(char), INPUT_MAX, fPtr) > 0) {
+                tAmount = fSize > INPUT_MAX ? INPUT_MAX : fSize;
+                sSize = send(hostFd, message, tAmount, 0);
+                if (sSize == -1) {
+                    printf("udp-server: failed to transmit the whole file\n");
+                    break;
+                }
+
+                memset(message, 0, INPUT_MAX);
+                fSize -= sSize;
+            }
+            printf("udp-server: file successfully transmitted\n");
+
+            fclose(fPtr);
         }
         if (strcmp(message, "put") == 0) {
             put_file(hostFd, clientAddr, clientLen);
