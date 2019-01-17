@@ -2,4 +2,4 @@
 
 
 int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port);
-int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port);
+int udp_socket(int* outFd, struct addrinfo** outInfo, char* mName, char* port);

@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    if (bind(hostFd, hostInfo.ai_addr, hostInfo.ai_addrlen) == -1) {
+    if (bind(hostFd, hostInfo->ai_addr, hostInfo->ai_addrlen) == -1) {
         printf("udp-server: failed to bind udp socket for given host\n");
         exit(1);
     }

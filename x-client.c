@@ -15,7 +15,7 @@
 #include "x-common.h"
 
 
-void handle(int serverFd, struct addrinfo serverInfo) {
+void handle(int serverFd, struct addrinfo* serverInfo) {
     char* message;
 
     message = calloc(INPUT_MAX, sizeof(char));
@@ -29,7 +29,7 @@ void handle(int serverFd, struct addrinfo serverInfo) {
         exit(1);
     }
     printf("%s\n", message);
-    if (sendto(serverFd, "hello", INPUT_MAX, 0, (struct sockaddr*) serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
+    if (sendto(serverFd, "hello", INPUT_MAX, 0, (struct sockaddr*) serverInfo->ai_addr, serverInfo->ai_addrlen) == -1) {
         printf("x-client: failed to send to server\n");
         exit(1);
     }
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
     char* sName;
     char* sPort;
     int serverFd;
-    struct addrinfo serverInfo;
+    struct addrinfo* serverInfo;
 
     if (argc != 3) {
         printf("usage: ./x-client <host name> <port number>\n");
@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    if (sendto(serverFd, "hello", INPUT_MAX, 0, (struct sockaddr*) serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
+    if (sendto(serverFd, "hello", INPUT_MAX, 0, (struct sockaddr*) serverInfo->ai_addr, serverInfo->ai_addrlen) == -1) {
         printf("x-client: failed to send to server\n");
         exit(1);
     }
