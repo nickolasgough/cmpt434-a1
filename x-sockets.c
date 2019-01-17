@@ -29,8 +29,10 @@ int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
-    sprintf(hName, "%s.usask.ca", mName);
     
+    if (mName != NULL) {
+        sprintf(hName, "%s.usask.ca", mName);
+    }
     if (getaddrinfo(hName, port, &hints, &pAi) != 0) {
         return 0;
     }
@@ -38,7 +40,7 @@ int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
         return 0;
     }
     
-    sockFd = socket(pAi->ai_family, pAi->ai_socktype, IPPROTO_TCP);
+    sockFd = socket(pAi->ai_family, pAi->ai_socktype, pAi->ai_protocol);
     if (sockFd < 0) {
         return 0;
     }
@@ -64,8 +66,10 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_PASSIVE;
-    sprintf(hName, "%s.usask.ca", mName);
-    
+
+    if (mName != NULL) {
+        sprintf(hName, "%s.usask.ca", mName);
+    }
     if (getaddrinfo(hName, port, &hints, &pAi) != 0) {
         return 0;
     }
@@ -73,7 +77,7 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
         return 0;
     }
     
-    sockFd = socket(pAi->ai_family, pAi->ai_socktype, IPPROTO_UDP);
+    sockFd = socket(pAi->ai_family, pAi->ai_socktype, pAi->ai_protocol);
     if (sockFd < 0) {
         return 0;
     }
