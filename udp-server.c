@@ -16,7 +16,7 @@
 #include "x-common.h"
 
 
-void handle(int hostFd, struct sockaddr_storage replyhere, socklen_t storageLen) {
+void handle(int hostFd, struct sockaddr_storage* replyhere, socklen_t storageLen) {
     char* message;
 
     message = calloc(INPUT_MAX, sizeof(char));
@@ -25,17 +25,17 @@ void handle(int hostFd, struct sockaddr_storage replyhere, socklen_t storageLen)
         exit(1);
     }
 
-    if (sendto(hostFd, "hello", INPUT_MAX, 0, (struct sockaddr*) &replyhere, sizeof(struct sockaddr_storage)) == -1) {
+    if (sendto(hostFd, "hello", INPUT_MAX, 0, (struct sockaddr*) replyhere, sizeof(struct sockaddr_storage)) == -1) {
         printf("udp-server: failed to reply to client\n");
         printf("Error: %d - %s\n", errno, strerror(errno));
         exit(1);
     }
-    if (recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &replyhere, &storageLen) == -1) {
+    if (recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) replyhere, &storageLen) == -1) {
         printf("udp-server: failed to receive from client\n");
         exit(1);
     }
     printf("%s\n", message);
-    if (sendto(hostFd, "hello", INPUT_MAX, 0, (struct sockaddr*) &replyhere, sizeof(struct sockaddr_storage)) == -1) {
+    if (sendto(hostFd, "hello", INPUT_MAX, 0, (struct sockaddr*) replyhere, sizeof(struct sockaddr_storage)) == -1) {
         printf("udp-server: failed to reply to client\n");
         printf("Error: %d - %s\n", errno, strerror(errno));
         exit(1);
