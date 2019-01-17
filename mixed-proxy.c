@@ -184,7 +184,7 @@ void put_file(int clientFd, int serverFd, struct addrinfo* serverInfo) {
     }
     memset(message, 0, INPUT_MAX);
 
-    if (sendto(serverFd, message, INPUT_MAX, 0, serverAddr, serverLen) == -1) {
+    if (sendto(serverFd, fName, INPUT_MAX, 0, serverAddr, serverLen) == -1) {
         printf("mixed-proxy: failed to transmit the put file name\n");
         return;
     }

@@ -72,6 +72,7 @@ void put_file(int hostFd, struct sockaddr_storage storageAddr, socklen_t storage
         return;
     }
 
+    printf("ready for the put...\n");
     sprintf(message, "%s", "ready");
     if (sendto(hostFd, message, INPUT_MAX, 0, clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send put file name response\n");
