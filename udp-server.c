@@ -46,16 +46,10 @@ void handle(int hostFd, struct sockaddr_storage* replyhere, socklen_t storageLen
 }
 
 
-int main(int argc, char* argv[]) {
+int get_socket() {
     int sockfd;
     struct addrinfo hints, *servinfo, *p;
     int rv;
-    int numbytes;
-    struct sockaddr_storage their_addr;
-    char buf[INPUT_MAX];
-    socklen_t addr_len;
-    char s[INET6_ADDRSTRLEN];
-    char* message;
 
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC; // set to AF_INET to force IPv4
@@ -88,6 +82,21 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "listener: failed to bind socket\n");
         return 2;
     }
+
+    return sockfd;
+}
+
+
+int main(int argc, char* argv[]) {
+    int sockfd;
+    int numbytes;
+    struct sockaddr_storage their_addr;
+    char buf[INPUT_MAX];
+    socklen_t addr_len;
+    char s[INET6_ADDRSTRLEN];
+    char* message;
+
+    sockfd = get_socket();
 
     message = calloc(INPUT_MAX, sizeof(char));
     if (message == NULL) {
