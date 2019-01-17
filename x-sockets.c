@@ -51,7 +51,7 @@ int tcp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
 }
 
 
-int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
+int udp_socket(int* outFd, struct addrinfo** outInfo, char* mName, char* port) {
     char* hName = NULL;
     struct addrinfo* pAi;
     struct addrinfo hints;
@@ -62,7 +62,7 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     }
     
     memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_INET;
+    hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_PASSIVE;
 
@@ -86,6 +86,6 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     }
     
     *outFd = sockFd;
-    *outInfo = *pAi;
+    *outInfo = pAi;
     return 1;
 }
