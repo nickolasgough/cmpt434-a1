@@ -20,7 +20,7 @@ int tcp_file_transmit(char* prog, int clientFd, char* fName);
 int udp_file_transmit(char* prog, int transFd, char* fName, struct sockaddr_storage transAddr, socklen_t transLen);
 
 char* tcp_array_receive(char* prog, int serverFd);
-char* udp_array_receive(char* prog, int recvFd, struct sockaddr_storage recvAddr, socklen_t recvLen);
+char* udp_array_receive(char* prog, int recvFd, struct sockaddr* recvAddr, socklen_t recvLen);
 
 int tcp_array_transmit(char* prog, int clientFd, char* fDest);
 int udp_array_transmit(char* prog, int transFd, char* fDest, struct sockaddr_storage transAddr, socklen_t transLen);
