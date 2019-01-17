@@ -117,8 +117,8 @@ void put_file(int clientFd, int serverFd, struct addrinfo* serverInfo) {
     char* fName = NULL;
     char* fDest = NULL;
     char* tDest = NULL;
-    struct sockaddr_storage serverAddr;
-    socklen_t serverLen;
+    struct sockaddr* serverAddr = (struct sockaddr*) serverInfo->ai_addr;
+    socklen_t serverLen = serverInfo->ai_addrlen;
 
     message = calloc(INPUT_MAX, sizeof(char));
     fName = calloc(INPUT_MAX, sizeof(char));
@@ -170,11 +170,11 @@ void put_file(int clientFd, int serverFd, struct addrinfo* serverInfo) {
 
     /* Initiate the request with the server */
     sprintf(message, "%s", "put");
-    if (sendto(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) serverInfo->ai_addr, serverInfo->ai_addrlen) == -1) {
+    if (sendto(serverFd, message, INPUT_MAX, 0, serverAddr, serverLen) == -1) {
         printf("mixed-proxy: failed to transmit the put command\n");
         return;
     }
-    if (recvfrom(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) &serverAddr, &serverLen) == -1) {
+    if (recvfrom(serverFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("mixed-proxy: failed to receive put command response\n");
         return;
     }
@@ -184,11 +184,11 @@ void put_file(int clientFd, int serverFd, struct addrinfo* serverInfo) {
     }
     memset(message, 0, INPUT_MAX);
 
-    if (sendto(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) &serverAddr, serverLen) == -1) {
+    if (sendto(serverFd, message, INPUT_MAX, 0, serverAddr, serverLen) == -1) {
         printf("mixed-proxy: failed to transmit the put file name\n");
         return;
     }
-    if (recvfrom(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) &serverAddr, &serverLen) == -1) {
+    if (recvfrom(serverFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("mixed-proxy: failed to receive put file name response\n");
         return;
     }

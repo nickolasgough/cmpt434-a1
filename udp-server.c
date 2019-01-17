@@ -59,9 +59,11 @@ void get_file(int hostFd, struct sockaddr_storage storageAddr, socklen_t storage
 }
 
 
-void put_file(int hostFd, struct sockaddr_storage clientAddr, socklen_t clientLen)  {
+void put_file(int hostFd, struct sockaddr_storage storageAddr, socklen_t storageLen)  {
     char* message;
     char* fName;
+    struct sockaddr* clientAddr = (struct sockaddr*) &storageAddr;
+    socklen_t clientLen = storageLen;
 
     message = calloc(INPUT_MAX, sizeof(char));
     fName = calloc(INPUT_MAX, sizeof(char));
@@ -71,13 +73,13 @@ void put_file(int hostFd, struct sockaddr_storage clientAddr, socklen_t clientLe
     }
 
     sprintf(message, "%s", "ready");
-    if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == - 1) {
+    if (sendto(hostFd, message, INPUT_MAX, 0, clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send put file name response\n");
         return;
     }
     memset(message, 0, INPUT_MAX);
 
-    if (recvfrom(hostFd, fName, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, &clientLen) == -1) {
+    if (recvfrom(hostFd, fName, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("udp-server: failed to receive put file name\n");
         return;
     }
@@ -85,7 +87,7 @@ void put_file(int hostFd, struct sockaddr_storage clientAddr, socklen_t clientLe
     if (!access(fName, F_OK)) {
         printf("udp-server: file %s already exists\n", fName);
         sprintf(message, "%s", "error");
-        if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == -1) {
+        if (sendto(hostFd, message, INPUT_MAX, 0, clientAddr, clientLen) == -1) {
             printf("udp-server: failed to send file exists error\n");
         }
         return;
@@ -93,7 +95,7 @@ void put_file(int hostFd, struct sockaddr_storage clientAddr, socklen_t clientLe
     memset(message, 0, INPUT_MAX);
 
     sprintf(message, "%s", "ready");
-    if (sendto(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == - 1) {
+    if (sendto(hostFd, message, INPUT_MAX, 0, clientAddr, clientLen) == - 1) {
         printf("udp-server: failed to send put file name response\n");
         return;
     }
