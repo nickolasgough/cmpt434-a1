@@ -24,7 +24,7 @@ void handle(int hostFd, struct sockaddr_storage storageAddr, socklen_t storageLe
         exit(1);
     }
 
-    if (sendto(hostFd, "hello", INPUT_MAX, 0, (struct sockaddr*) &storageAddr, storageLen) == -1) {
+    if (sendto(hostFd, "hello", INPUT_MAX, 0, (struct sockaddr*) &storageAddr, sizeof(struct sockaddr_storage)) == -1) {
         printf("udp-server: failed to reply to client\n");
         printf("Error: %d - %s\n", errno, strerror(errno));
         exit(1);
@@ -34,7 +34,7 @@ void handle(int hostFd, struct sockaddr_storage storageAddr, socklen_t storageLe
         exit(1);
     }
     printf("%s\n", message);
-    if (sendto(hostFd, "hello", INPUT_MAX, 0, (struct sockaddr*) &storageAddr, storageLen) == -1) {
+    if (sendto(hostFd, "hello", INPUT_MAX, 0, (struct sockaddr*) &storageAddr, sizeof(struct sockaddr_storage)) == -1) {
         printf("udp-server: failed to reply to client\n");
         printf("Error: %d - %s\n", errno, strerror(errno));
         exit(1);
