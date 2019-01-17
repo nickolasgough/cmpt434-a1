@@ -73,6 +73,7 @@ int main(int argc, char* argv[]) {
         printf("udp-server: failed to bind udp socket for given host\n");
         exit(1);
     }
+    freeaddrinfo(hostInfo);
 
     message = calloc(INPUT_MAX, sizeof(char));
     if (message == NULL) {
@@ -80,7 +81,8 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    if (recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, &clientLen) == -1) {
+    clientLen = sizeof(clientAddr);
+    if (recvfrom(hostFd, message, INPUT_MAX-1, 0, (struct sockaddr*) &clientAddr, &clientLen) == -1) {
         printf("udp-server: failed to receive from client\n");
         exit(1);
     }

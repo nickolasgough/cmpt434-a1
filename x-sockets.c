@@ -61,8 +61,8 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
         return 0;
     }
     
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_PASSIVE;
 
