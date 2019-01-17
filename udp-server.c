@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
         printf("udp-server: failed to bind udp socket for given host\n");
         exit(1);
     }
-    freeaddrinfo(hostInfo);
+    freeaddrinfo(&hostInfo);
 
     message = calloc(INPUT_MAX, sizeof(char));
     if (message == NULL) {
