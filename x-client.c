@@ -14,6 +14,32 @@
 #include "x-common.h"
 
 
+void handle(int serverFd, struct addrinfo serverInfo) {
+    char* message;
+
+    message = calloc(INPUT_MAX, sizeof(char));
+    if (message == NULL) {
+        printf("x-client: failed to allocate necessary memory\n");
+        exit(1);
+    }
+
+    if (recvfrom(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) NULL, NULL) == -1) {
+        printf("x-client: failed to receive from server\n");
+        exit(1);
+    }
+    printf("%s\n", message);
+    if (sendto(serverFd, "hello", INPUT_MAX, 0, (struct sockaddr*) serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
+        printf("x-client: failed to send to server\n");
+        exit(1);
+    }
+    if (recvfrom(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) NULL, NULL) == -1) {
+        printf("x-client: failed to receive from server\n");
+        exit(1);
+    }
+    printf("%s\n", message);
+}
+
+
 int main(int argc, char* argv[]) {
     char* message;
     char* sName;
@@ -48,20 +74,6 @@ int main(int argc, char* argv[]) {
         printf("x-client: failed to send to server\n");
         exit(1);
     }
-    if (recvfrom(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) NULL, NULL) == -1) {
-        printf("x-client: failed to receive from server\n");
-        exit(1);
-    }
-    printf("%s\n", message);
-    if (sendto(serverFd, "hello", INPUT_MAX, 0, (struct sockaddr*) serverInfo.ai_addr, serverInfo.ai_addrlen) == -1) {
-        printf("x-client: failed to send to server\n");
-        exit(1);
-    }
-    if (recvfrom(serverFd, message, INPUT_MAX, 0, (struct sockaddr*) NULL, NULL) == -1) {
-        printf("x-client: failed to receive from server\n");
-        exit(1);
-    }
-    printf("%s\n", message);
 
     close(serverFd);
     exit(0);

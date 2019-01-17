@@ -15,6 +15,33 @@
 #include "x-common.h"
 
 
+void handle(int hostFd, struct sockaddr_storage storageAddr, socklen_t storageLen) {
+    char* message;
+
+    message = calloc(INPUT_MAX, sizeof(char));
+    if (message == NULL) {
+        printf("udp-server: failed to allocate necessary memory\n");
+        exit(1);
+    }
+
+    if (sendto(hostFd, "hello", INPUT_MAX, 0, (struct sockaddr*) &storageAddr, storageLen) == -1) {
+        printf("udp-server: failed to reply to client\n");
+        printf("Error: %d - %s\n", errno, strerror(errno));
+        exit(1);
+    }
+    if (recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &storageAddr, &storageLen) == -1) {
+        printf("udp-server: failed to receive from client\n");
+        exit(1);
+    }
+    printf("%s\n", message);
+    if (sendto(hostFd, "hello", INPUT_MAX, 0, (struct sockaddr*) &storageAddr, storageLen) == -1) {
+        printf("udp-server: failed to reply to client\n");
+        printf("Error: %d - %s\n", errno, strerror(errno));
+        exit(1);
+    }
+}
+
+
 int main(int argc, char* argv[]) {
     char* hName;
     char* hPort;
@@ -61,21 +88,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
     printf("%s\n", message);
-    if (sendto(hostFd, "hello", INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == -1) {
-        printf("udp-server: failed to reply to client\n");
-        printf("Error: %d - %s\n", errno, strerror(errno));
-        exit(1);
-    }
-    if (recvfrom(hostFd, message, INPUT_MAX, 0, (struct sockaddr*) &clientAddr, &clientLen) == -1) {
-        printf("udp-server: failed to receive from client\n");
-        exit(1);
-    }
-    printf("%s\n", message);
-    if (sendto(hostFd, "hello", INPUT_MAX, 0, (struct sockaddr*) &clientAddr, clientLen) == -1) {
-        printf("udp-server: failed to reply to client\n");
-        printf("Error: %d - %s\n", errno, strerror(errno));
-        exit(1);
-    }
+    handle(hostFd, clientAddr, clientLen);
 
     close(hostFd);
     exit(0);
