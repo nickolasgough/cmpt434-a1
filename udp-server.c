@@ -17,7 +17,7 @@
 void get_file(int hostFd, struct sockaddr_storage storageAddr, socklen_t storageLen) {
     char* message;
     char* fName;
-    struct sockaddr* clientAddr = (struct sockaddr*) storageAddr;
+    struct sockaddr* clientAddr = (struct sockaddr*) &storageAddr;
     socklen_t clientLen = storageLen;
 
     message = calloc(INPUT_MAX, sizeof(char));
