@@ -219,7 +219,7 @@ int tcp_file_transmit(char* prog, int transFd, char* fName) {
 }
 
 
-int udp_file_transmit(char* prog, int transFd, char* fName, struct sockaddr_storage transAddr, socklen_t transLen) {
+int udp_file_transmit(char* prog, int transFd, char* fName, struct sockaddr* transAddr, socklen_t transLen) {
     char* message;
     FILE* fPtr;
     long int fSize;
@@ -247,11 +247,11 @@ int udp_file_transmit(char* prog, int transFd, char* fName, struct sockaddr_stor
     fSize = ftell(fPtr);
     fseek(fPtr, 0, SEEK_SET);
 
-    if (sendto(transFd, &fSize, sizeof(fSize), 0, (struct sockaddr*) &transAddr, transLen) == -1) {
+    if (sendto(transFd, &fSize, sizeof(fSize), 0, transAddr, transLen) == -1) {
         printf("%s: failed to send file size\n", prog);
         return 0;
     }
-    if (recvfrom(transFd, message, INPUT_MAX, 0, (struct sockaddr*) &transAddr, &transLen) == -1) {
+    if (recvfrom(transFd, message, INPUT_MAX, 0, NULL, NULL) == -1) {
         printf("%s: failed to receive file size response\n", prog);
         return 0;
     }
@@ -264,7 +264,7 @@ int udp_file_transmit(char* prog, int transFd, char* fName, struct sockaddr_stor
     printf("%s: transmitting the file...\n", prog);
     while (fread(message, sizeof(char), INPUT_MAX, fPtr) > 0) {
         tAmount = fSize > INPUT_MAX ? INPUT_MAX : fSize;
-        sSize = sendto(transFd, message, tAmount, 0, (struct sockaddr*) &transAddr, transLen);
+        sSize = sendto(transFd, message, tAmount, 0, transAddr, transLen);
         if (sSize == -1) {
             printf("%s: failed to transmit the whole file\n", prog);
             return 0;
