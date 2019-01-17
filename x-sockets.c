@@ -57,8 +57,7 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     struct addrinfo hints;
     int sockFd;
     
-    hName = calloc(INPUT_MAX, sizeof(char));
-    if (hName == NULL || port == NULL) {
+    if (port == NULL) {
         return 0;
     }
     
@@ -68,6 +67,10 @@ int udp_socket(int* outFd, struct addrinfo* outInfo, char* mName, char* port) {
     hints.ai_flags = AI_PASSIVE;
 
     if (mName != NULL) {
+        hName = calloc(INPUT_MAX, sizeof(char));
+        if (hName == NULL) {
+            return 0;
+        }
         sprintf(hName, "%s.usask.ca", mName);
     }
     if (getaddrinfo(hName, port, &hints, &pAi) != 0) {

@@ -64,11 +64,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    if (gethostname(hName, INPUT_MAX) == -1) {
-        printf("udp-server: failed to determine the name of the machine\n");
-        exit(1);
-    }
-    if (!udp_socket(&hostFd, &hostInfo, hName, hPort)) {
+    if (!udp_socket(&hostFd, &hostInfo, NULL, hPort)) {
         printf("udp-server: failed to create udp socket for given host\n");
         exit(1);
     }
@@ -89,7 +85,7 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
     printf("%s\n", message);
-    handle(hostFd, clientAddr, clientLen);
+    handle(hostFd, &clientAddr, clientLen);
 
     close(hostFd);
     return 0;
