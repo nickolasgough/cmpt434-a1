@@ -51,13 +51,12 @@ int tcp_socket(int* outFd, struct addrinfo** outInfo, char* mName, char* port) {
 
 
 int udp_socket(int* outFd, struct addrinfo** outInfo, char* mName, char* port) {
-    char* hName;
+    char* hName = NULL;
     struct addrinfo* pAi;
     struct addrinfo hints;
     int sockFd;
     
-    hName = calloc(INPUT_MAX, sizeof(char));
-    if (hName == NULL || port == NULL) {
+    if (port == NULL) {
         return 0;
     }
     
@@ -66,7 +65,14 @@ int udp_socket(int* outFd, struct addrinfo** outInfo, char* mName, char* port) {
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_protocol = IPPROTO_UDP;
     hints.ai_flags = AI_PASSIVE;
-    sprintf(hName, "%s.usask.ca", mName);
+
+    if (mName != NULL) {
+        hName = calloc(INPUT_MAX, sizeof(char));
+        if (hName == NULL) {
+            return 0;
+        }
+        sprintf(hName, "%s.usask.ca", mName);
+    }
     
     if (getaddrinfo(hName, port, &hints, &pAi) != 0) {
         return 0;
