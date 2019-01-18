@@ -1,2 +1,193 @@
 Nickolas Gough, nvg081, 11181823
 
+
+The following design document describes the design of a few simple client,
+proxy, and server applications that transmit files between the client and
+the server, sometimes passing through a proxy, through the use of socket
+connections, either TCP-based or UDP-based.
+
+
+Overview:
+
+The client is designed to collect requests from the user, transmit the given
+request to the proxy or server to which it is connected, and process the
+response, either transmitting or receiving a file or an error. The proxy is
+designed to receive requests from the client and pass the given request along to
+the server. Before transmitting the file to the client or the server, which
+depends on the given request, the proxy will first process the file to duplicate
+any c, m, p, or t characters found within the given file. The server is designed
+to receive requests from the proxy or client to which it is connected and
+perform the given request, either accepting or transmitting a file, and handling
+any encountered errors.
+
+
+Protocol Design:
+
+The protocol is designed to be compatible with both TCP and UDP socket protocols
+under the assumption that all packets are always delivered and are delivered in
+order. The protocol is similar to a stop-and-wait protocol in which the sender
+waits to transmit the next packet until an acknowledgement is received, except
+that this protocol will wait to transmit the next logical unit of data. That is,
+within the protocol, the sender will transmit a logical unit of data, receive an
+acknowledgement from the receiver, and then transmit the next logical unit of
+data recursively in the same way. Of course, some receiving components will
+perform the inverse of the protocol, where a logical unit of data will be
+received from the sender, transmit the acknowledgement, and then the next
+logical unit of data will be received recursively in the same way.
+
+
+Component Design:
+
+x-client ->
+    ./x-client <server name> <server port>
+
+Design:
+    
+    The x-client is the TCP-based client for each of the applications. The
+    client is designed to collect requests from the user and communicate with the
+    proxy or server to which it is connected to fulfill the given request. With
+    its given arguments, the client will establish a connection with the proxy
+    or server with which it is to communicate and will then accept requests from
+    the user, processing each one in turn. If the client is not given the
+    correct arguments either at startup or when accepting a request, an error
+    message will be printed and the program will exit if it cannot recover. When
+    completing a get or put request, the client adheres to the implemented
+    protocol and recognizes error messages. The exact sends and receives will
+    vary depending on the request, but include sending the file name, sending or
+    receiving the file size, and then sending or receiving the file contents,
+    depending on the given request.
+
+Notes:
+
+    The client establishes a simple TCP connection with the proxy or server to
+    which it is connected, which allows it to perform simple send and recv
+    function calls. This means the file descriptor is the only network data 
+    required to be passed along.
+
+proxy -> 
+    ./tcp-proxy <host port> <server name> <server port>
+    OR
+    ./mixed-proxy <host port> <server name> <server port>
+
+Design:
+    
+    The proxy is either the TCP-based or the mixed (TCP- and UDP-based) proxy
+    for each of the applications. The proxy is designed to receive requests from
+    the client that connects to it and pass the request along to the server to
+    which it is connected to fulfill the request. With its given arguments, the
+    proxy will bind to its given port on which it is to receive client requests,
+    establish a connection with the server to which it will pass requests, and
+    will then begin accepting requests, processing each one in turn. If the
+    proxy is not given the correct arguments either at startup or when accepting
+    a request or fails to perform its startup or complete a request, an error
+    message will be printed and the program will exit if it cannot recover. When
+    completing a get or put request, the proxy adheres to the implemented
+    protocol and will respond with an error message if an error is encountered.
+    The exact sends and receives will vary depending on the request, but include
+    sending and/or receiving the file name, sending and/or receiving the file
+    size, and then sending and/or receiving the file contents, depending on the
+    given request.
+
+Notes:
+
+    The TCP-based proxy establishes a simple TCP connection with the client and
+    server to which it is connected, which allows it to perform simple send and
+    recv function calls. This means the file descriptor is the only network data 
+    required to be passed along. The mixed-based proxy establishes a TCP
+    connection with the client and UDP-connection with the server to which it is
+    connected, which is actually connectionless, meaning it must perform
+    somewhat more complex sendto and recvfrom function calls. This means the
+    file descriptor and address data are both required network data to be passed
+    along.
+
+server ->
+    ./tcp-server <host port> OR ./udp-server <host port>
+
+Design:
+    
+    The server is either the TCP-based or UDP-based server for each of the
+    applications. The server is designed to receive requests from the client or
+    proxy that connects to it and fulfill the given request. With its given
+    arguments, the server will bind to its given port on which it is to accept
+    client requests and will then begin accpeting incoming requests from the
+    client or proxy, processing each one in turn. If the server is not given the
+    correct arguments either at startup or when accepting a request, an error
+    message will be printed and the program will exit if it cannot recover. When
+    completing a get or put request, the server adheres to the implemented
+    protocol and will respond with an error message if an error is encountered.
+    The exact sends and receives will vary depending on the request, but include
+    receiving the file name, sending or receiving the file size, and then
+    sending or receiving the file contents, depending on the given request.
+
+Notes:
+
+    The TCP-based server establishes a simple TCP connection with the client or
+    proxy to which it is connected, which allows it to perform simple send and
+    recv function calls. This means the file descriptor is the only network data 
+    required to be passed along. The UDP-based server establishes a UDP
+    connection with the client or proxy to which it is connected, which is
+    actually connectionless, which means it must perform somewhat more complex
+    sendto and recvfrom function calls. This means the file descriptor and
+    address are both required network data to be passed along.
+
+
+Implementation Details:
+
+Transmitting a file:
+
+    Transmitting a file is accomplished by sending the file name, file size, and
+    the file contents to the receiver in that order and each as logical units in
+    the implemented protocol. The file contents are fragmented into fixed-sized
+    chunks, requiring the file size to be transmitted prior to the file
+    contents. First, the file will be opened. Second, the file name will be
+    transmitted. Third, the file size will be transmitted. Finally, the file
+    contents will be transmitted by iteratively reading a fixed-sized chunk from
+    the open file and transmitting each chunk to the sender until the end of the
+    file has been reached.
+
+Receiving a file:
+
+    Receiving a file is accomplished by receiving the file name, file size, and
+    the file contents from the sender in that order and each as logical units in
+    the implemented protocol. The file contents are fragmented into fixed-sized
+    chunks, requiring the file size to be received prior to the file
+    contents. First, the file will be opened. Second, the file name will be
+    received. Third, the file size will be received. Finally, the file contents
+    will be received by iteratively receiving a fixed-sized chunk from
+    the sender and appending the chunk to the open file until the whole file has
+    been received.
+
+Determining the size of a file:
+
+    The file size can be determined from the fseek and ftell functions when
+    given an open file or can be determine from the strlen function when given
+    the character array of the file.
+
+Determining the end of a file:
+
+    Determining when the file has been completely transmitted or received, the
+    file size is reduced by the amount of data sent or received, meaning a loop
+    can be used to continuously send or receive fragemented chunks of the file
+    until the file size has been reduced to zero.
+
+Processing a given file:
+
+    The proxy processes a given file by first receiving the contents of the file
+    in a single character array, the size of which is received prior to the
+    contents of the file. The contents of the file are then transferred from the
+    original character array to another charcter array twice as large as the
+    original, duplicating any c, m, p, and t characters encountered as the
+    transfer progresses. The resulting character array is then transmitted in
+    place of the original file contents.
+
+
+Possible Error Conditions:
+
+    - The given file already exists on the server side
+    - The given file already exists on the client side
+
+Notes:
+    
+    If a proxy detects an error, an error message is sent back to the waiting
+    client to propagate the error. Similarly, if a server detects an error, an
+    error message is propagated back to the waiting client or proxy.
