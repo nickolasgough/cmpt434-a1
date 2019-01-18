@@ -1,0 +1,213 @@
+Nickolas Gough, nvg081, 11181823
+
+
+### Part B
+
+
+Total delay = td
+Propagation delay = pd
+Link distance = ld
+Speed of signal propagation = sp
+Link data rate = dr
+Queueing delay = qd
+Node processing delay = nd
+Data size = ds
+
+Percent of propagation delay = ppd
+
+Symbol rate (baud) = bd
+Number of states = v
+log = log2
+
+Number of sessions = s
+Achievable data rate = achdr
+Duration of busy session = db
+Average number of busy sessions = avgbs
+Average data rate = avgdr
+
+
+### 1
+
+    pd = ld / sp
+
+    td = pd + (ds / dr) + x + (6.25*(10^-11s/b) * ds)
+
+    ppd = (pd / td) * 100
+
+OCN: x = 0s, ld = 0.005m
+
+    pd = (0.005m) / 200*(10^6m)/s = 2.50*(10^-11)s
+
+    td = 2.50*(10^-11)s + (800b / 4.00*(10^9)b/s) + 0s + (6.25*(10^-11s/b) * 800b)
+
+    td = 2.50*(10^-11)s + 2.00*(10^-7)s + 5.00*(10^-8)s
+
+    td = 2.50*(10^-7)s
+
+    ppd = (2.50*(10^-11)s / 2.50*(10^-7)s) * 100 
+
+    ppd = 0.01%
+
+SAN: x = 3.00*(10^-7)s, ld = 5.00m
+
+    pd = (5.00m) / 200*(10^6m)/s = 2.50*(10^-8)s
+
+    td = 2.50*(10^-8)s + (800b / 4.00*(10^9)b/s) + 3.00*(10^-7)s + (6.25*(10^-11s/b) * 800b)
+
+    td = 2.50*(10^-8)s + 2.00*(10^-7)s + 3.00*(10^-7)s + 5.00*(10^-8)s
+
+    td = 5.75*(10^-7)s
+
+    ppd = (2.50*(10^-8)s / 5.75*(10^-7)s) * 100 
+
+    ppd = 4.35%
+
+LAN: x = 3.00*(10^-6)s, ld = 5.00*(10^3)m
+
+    pd = 5.00*(10^3)m / 200*(10^6m)/s = 2.50*(10^-5)s
+
+    td = 2.50*(10^-5)s + (800b / 4.00*(10^9)b/s) + 3.00*(10^-6)s + (6.25*(10^-11s/b) * 800b)
+
+    td = 2.50*(10^-5)s + 2.00*(10^-7)s + 3.00*(10^-6)s + 5.00*(10^-8)s
+
+    td = 2.83*(10^-5)s
+
+    ppd = (2.50*(10^-5)s / 2.83*(10^-5)s) * 100
+
+    ppd = 88.3%
+
+WAN: x = 3.00*(10^-5)s, ld = 5.00*(10^6)m
+
+    pd = 5.00*(10^6)m / 200*(10^6m)/s = 2.50*(10^-2)s
+
+    td = 2.50*(10^-2)s + (800b / 4.00*(10^9)b/s) + 3.00*(10^-5)s + (6.25*(10^-11s/b) * 800b)
+
+    td = 2.50*(10^-2)s + 2.00*(10^-7)s + 3.00*(10^-5)s + 5.00*(10^-8)s
+
+    td = 2.50*(10^-2)s
+
+    ppd = (2.50*(10^-2)s / 2.50*(10^-2)s) * 100
+
+    ppd = 100%
+
+
+### 2
+
+    td = n * ((4 * pd) + (4 * (ds / dr)))
+
+a: n = 1
+
+    td = 1 * ((4 * 1.00*(10^-3)s) + (4 * (8000b / 100*(10^6)b/s)))
+
+    td = 4.00*(10^-3))s + 8.00*(10^-5)s
+
+    td = 4.08*(10^-3)s
+
+b: n = 12
+
+    td = 12 * ((4 * 1.00*(10^-3)s) + (4 * (8000b / 100*(10^6)b/s)))
+
+    td = 12 * (4.00*(10^-3))s + 8.00*(10^-5)s)
+
+    td = 4.90*(10^-2)s
+
+
+### 3
+
+v = 2^b
+bd = 2 * H
+dr = b * bd
+
+Shannon's Theorem =>
+
+    dr = H * log(1 + S/N)
+
+    dr = 400*(10^3)Hz * log(1 + 63)
+
+    dr = 400*(10^3)Hz * 6
+
+    dr = 2.40*(10^6)b/s
+
+a: v = 2
+
+    Nyquist's Theorem =>
+
+        2 = 2^b
+
+        b = 1
+
+        bd = 2 * 400*(10^3)Hz
+
+        bd = 800*(10^3)Hz
+
+        dr = 1 * (800*(10^3)Hz)
+
+        dr = 800*(10^3)b/s < 2.40*(10^6)b/s
+
+    Thus, the maximum data rate is 800*(10^3)b/s
+
+b: v = 32
+
+    Nyquist's Theorem =>
+
+        32 = 2^b
+
+        b = 5
+
+        bd = 2 * 400*(10^3)Hz
+
+        bd = 800*(10^3)Hz
+
+        dr = 5 * (800*(10^3)Hz)
+
+        dr = 4.00*(10^6)b/s > 2.40*(10^6)b/s
+
+    Thus, the maximum data rate is 2.40*(10^6)b/s
+
+### 4
+
+a:
+    achdr = dr / s
+
+    achdr = (100*(10^6)b/s) / 100
+
+    achdr = 1*(10^6)b/s
+
+b:
+
+avgdr = dr / (99 * (db / (1s + db)))
+
+db = 10s
+
+    avgdr = (100*(10^6)b/s) / (99 * (10s / (1s + 10s)))
+
+    avgdr = (100*(10^6)b/s) / 90
+
+    avgdr = 1.11*(10^6)b/s
+
+db = 1s
+
+    avgdr = (100*(10^6)b/s) / (99 * (1s / (1s + 1s)))
+
+    avgdr = (100*(10^6)b/s) / 49.5
+
+    avgdr = 2.02*(10^6)b/s
+
+db = 0.1s
+
+    avgdr = (100*(10^6)b/s) / (99 * (0.1s / (1s + 0.1s)))
+
+    avgdr = (100*(10^6)b/s) / 9
+
+    avgdr = 11.1*(10^9)b/s
+
+db = 0.01s
+
+    avgdr = (100*(10^6)b/s) / (99 * (0.01s / (1s + 0.01s)))
+
+    avgdr = (100*(10^6)b/s) / 0.98
+
+    avgdr = 102*(10^9)b/s
+
+
+### 5
