@@ -128,13 +128,12 @@ int parse_cmd(char* src, char* del, char** dest) {
     do {
         if (n < 3) {
             dest[n] = token;
+            n += 1;
         }
         token = strtok(NULL, del);
-
-        n += 1;
     } while (token != NULL);
 
-    return n < 3;
+    return n <= 3;
 }
 
 
