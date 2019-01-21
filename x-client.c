@@ -182,7 +182,7 @@ int main(int argc, char* argv[]) {
     while (1) {
         printf("x-client? ");
 
-        fgets(command, INPUT_MAX, STD_IN);
+        fgets(command, INPUT_MAX, stdin);
         if (parse_cmd(command, " ", inputs)) {
             action = inputs[0];
             lFile = inputs[1];
