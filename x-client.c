@@ -78,7 +78,7 @@ void put_file(int serverFd, char* lFile, char* rFile) {
         return;
     }
 
-    /* Issue get request */
+    /* Issue put request */
     sprintf(message, "%s", "put");
     if (send(serverFd, message, INPUT_MAX, 0) == -1) {
         printf("x-client: failed to transmit the put command\n");
@@ -109,6 +109,7 @@ void put_file(int serverFd, char* lFile, char* rFile) {
     }
     memset(message, 0, INPUT_MAX);
 
+    /* Transmit the file */
     tcp_file_transmit("x-client", serverFd, lFile);
 }
 

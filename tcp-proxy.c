@@ -1,5 +1,6 @@
 /* Nickolas Gough, nvg081, 11181823 */
 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -11,10 +12,6 @@
 
 #include "x-sockets.h"
 #include "x-common.h"
-
-
-#define TEMP0 "temp0.txt"
-#define TEMP1 "temp1.txt"
 
 
 void get_file(int clientFd, int serverFd) {
