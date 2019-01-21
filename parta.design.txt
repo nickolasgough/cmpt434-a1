@@ -182,15 +182,13 @@ Determining the size of a file:
 
 Determining the end of a file:
 
-    Determining when the file has been completely transmitted or received is
-    accomplished by reducing the known size of the file by the transmitted or
-    received byte amount within a loop that continuously transmits or receives
-    fixed-size file chunks until the file size has been reduced to zero. More
-    precisely, the file size is first determined, and then the file contents are
-    transmitted or received in fixed-size chunks while reducing the file size
-    by the transmitted or received byte amount until the known file size has
-    been reduced to zero, at which point the whole file has been transmitted or
-    received.
+    Determining when the file has been completely processed is accomplished by
+    tracking the amount of the file that has been processed. That is, the size
+    of the file is first determined, and then the file is processed in
+    fixed-size chunks while reducing the known size of the file by the amount
+    of the file processed until the known size of the file has been reduced to
+    zero. Processing a file in this context referrs to transmitting or receiving
+    the contents of the file.
 
 Processing a given file:
 
