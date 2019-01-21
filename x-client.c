@@ -131,7 +131,7 @@ int parse_cmd(char* src, char* del, char** dest) {
         if (n < 3) {
             dest[n] = token;
         }
-        
+
         token = strtok(NULL, del);
         n += 1;
     } while (token != NULL);
@@ -188,9 +188,6 @@ int main(int argc, char* argv[]) {
             lFile = inputs[1];
             rFile = inputs[2];
 
-            if (strcmp(action, "quit") == 0) {
-                exit(0);
-            }
             if (strcmp(action, "get") == 0) {
                 get_file(serverFd, lFile, rFile);
             }
@@ -205,6 +202,11 @@ int main(int argc, char* argv[]) {
                 printf("quit\n");
             }
         } else {
+            action = inputs[0];
+            if (strcmp(action, "quit") == 0) {
+                exit(0);
+            }
+
             printf("x-client: Unknown command.\n");
             printf("Known commands list below:\n");
             printf("get <local file> <remote file>\n");
