@@ -127,7 +127,6 @@ int parse_cmd(char* src, char* del, char** dest) {
     }
     do {
         if (n < 3) {
-            printf("%s\n", token);
             dest[n] = token;
             n += 1;
         }
@@ -192,6 +191,8 @@ int main(int argc, char* argv[]) {
                 exit(0);
             }
             if (strcmp(action, "get") == 0) {
+                printf("%s\n", lFile);
+                printf("%s\n", rFile);
                 get_file(serverFd, lFile, rFile);
             }
             else if (strcmp(action, "put") == 0) {
