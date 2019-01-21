@@ -197,15 +197,15 @@ int main(int argc, char* argv[]) {
                 put_file(serverFd, lFile, rFile);
             }
             else {
-                printf("Unknown command.\n");
-                printf("Known commands:\n");
+                printf("x-client: Unknown command.\n");
+                printf("Known commands list below:\n");
                 printf("get <local file> <remote file>\n");
                 printf("put <local file> <remote file>\n");
                 printf("quit\n");
             }
         } else {
-            printf("Unknown command.\n");
-            printf("Known commands:\n");
+            printf("x-client: Unknown command.\n");
+            printf("Known commands list below:\n");
             printf("get <local file> <remote file>\n");
             printf("put <local file> <remote file>\n");
             printf("quit\n");
