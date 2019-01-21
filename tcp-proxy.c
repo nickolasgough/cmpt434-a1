@@ -55,6 +55,10 @@ void get_file(int clientFd, int serverFd) {
     }
     if (strcmp(message, "ready") != 0) {
         printf("tcp-proxy: received unexpected get command response\n");
+        sprintf(message, "%s", "error");
+        if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+            printf("tcp-proxy: failed to send proxy interruption error\n");
+        }
         return;
     }
     memset(message, 0, INPUT_MAX);
@@ -69,6 +73,10 @@ void get_file(int clientFd, int serverFd) {
     }
     if (strcmp(message, "ready") != 0) {
         printf("tcp-proxy: received unexpected get file name response\n");
+        sprintf(message, "%s", "error");
+        if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+            printf("tcp-proxy: failed to send proxy interruption error\n");
+        }
         return;
     }
     memset(message, 0, INPUT_MAX);
@@ -175,6 +183,10 @@ void put_file(int clientFd, int serverFd) {
     }
     if (strcmp(message, "ready") != 0) {
         printf("tcp-proxy: received unexpected put command response\n");
+        sprintf(message, "%s", "error");
+        if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+            printf("tcp-proxy: failed to send proxy interruption error\n");
+        }
         return;
     }
     memset(message, 0, INPUT_MAX);
@@ -189,6 +201,10 @@ void put_file(int clientFd, int serverFd) {
     }
     if (strcmp(message, "ready") != 0) {
         printf("tcp-proxy: received unexpected put file name response\n");
+        sprintf(message, "%s", "error");
+        if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+            printf("tcp-proxy: failed to send proxy interruption error\n");
+        }
         return;
     }
     memset(message, 0, INPUT_MAX);
