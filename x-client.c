@@ -135,7 +135,7 @@ int parse_cmd(char* src, char* del, char** dest) {
         token = strtok(NULL, del);
     } while (token != NULL);
 
-    return n <= 3;
+    return n == 3;
 }
 
 
