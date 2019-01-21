@@ -2,9 +2,10 @@ Nickolas Gough, nvg081, 11181823
 
 
 The following design document describes the design of a few simple client,
-proxy, and server applications that transmit files between the client and
-the server, sometimes passing through a proxy, through the use of socket
-connections, either TCP-based or UDP-based.
+proxy, and server applications that transmit files between the client and the
+server, sometimes passing through a proxy, with the use of socket connections,
+either TCP-based or UDP-based. All applications are text-based command-line
+applications.
 
 
 Overview:
@@ -33,16 +34,22 @@ acknowledgement from the receiver, and then transmit the next logical unit of
 data recursively in the same way. Of course, some receiving components will
 perform the inverse of the protocol, where a logical unit of data will be
 received from the sender, transmit the acknowledgement, and then the next
-logical unit of data will be received recursively in the same way.
+logical unit of data will be received recursively in the same way. The logical
+units of data are the command, file name, file size, and file contents, but the
+file contents is the only logical unit of data that is fragmented. Finally,
+acknowledgements take the form of a ready string.
 
 
 Relevant Files:
 
+    Makefile - project makefile
     x-client.c - tcp client implementation
     tcp-proxy.c - tcp proxy implementation
     tcp-server.c - tcp server implementation
     mixed-proxy.c - tcd/udp proxy implementation
     udp-server.c - udp server implementation
+    x-sockets.c - socket related code
+    x-common.c - common transmission/reception functions
 
 
 Component Design:
@@ -71,7 +78,7 @@ Notes:
     The client establishes a simple TCP connection with the proxy or server to
     which it is connected, which allows it to perform simple send and recv
     function calls. This means the file descriptor is the only network data 
-    required to be passed along.
+    required to be passed along to invoked functions.
 
 proxy -> 
     ./tcp-proxy <host port> <server name> <server port>
@@ -102,12 +109,12 @@ Notes:
     The TCP-based proxy establishes a simple TCP connection with the client and
     server to which it is connected, which allows it to perform simple send and
     recv function calls. This means the file descriptor is the only network data 
-    required to be passed along. The mixed-based proxy establishes a TCP
-    connection with the client and UDP-connection with the server to which it is
-    connected, which is actually connectionless, meaning it must perform
-    somewhat more complex sendto and recvfrom function calls. This means the
-    file descriptor and address data are both required network data to be passed
-    along.
+    required to be passed along to invoked functions. The mixed-based proxy
+    establishes a TCP connection with the client and UDP-connection with the
+    server to which it is connected, which is actually connectionless, meaning
+    it must perform somewhat more complex sendto and recvfrom function calls.
+    This means the file descriptor and address data are both required network
+    data to be passed along to invoked functions.
 
 server ->
     ./tcp-server <host port> OR ./udp-server <host port>
@@ -133,11 +140,12 @@ Notes:
     The TCP-based server establishes a simple TCP connection with the client or
     proxy to which it is connected, which allows it to perform simple send and
     recv function calls. This means the file descriptor is the only network data 
-    required to be passed along. The UDP-based server establishes a UDP
-    connection with the client or proxy to which it is connected, which is
-    actually connectionless, which means it must perform somewhat more complex
-    sendto and recvfrom function calls. This means the file descriptor and
-    address are both required network data to be passed along.
+    required to be passed along to invoked functions. The UDP-based server
+    establishes a UDP connection with the client or proxy to which it is
+    connected, which is actually connectionless, which means it must perform
+    somewhat more complex sendto and recvfrom function calls. This means the
+    file descriptor and address are both required network data to be passed
+    along to invoked functions.
 
 
 Implementation Details:
@@ -170,14 +178,19 @@ Determining the size of a file:
 
     The file size can be determined from the fseek and ftell functions when
     given an open file or can be determine from the strlen function when given
-    the character array of the file.
+    the character array of a file.
 
 Determining the end of a file:
 
-    Determining when the file has been completely transmitted or received, the
-    file size is reduced by the amount of data sent or received, meaning a loop
-    can be used to continuously send or receive fragemented chunks of the file
-    until the file size has been reduced to zero.
+    Determining when the file has been completely transmitted or received is
+    accomplished by reducing the known size of the file by the transmitted or
+    received byte amount within a loop that continuously transmits or receives
+    fixed-size file chunks until the file size has been reduced to zero. More
+    precisely, the file size is first determined, and then the file contents are
+    transmitted or received in fixed-size chunks while reducing the file size
+    by the transmitted or received byte amount until the known file size has
+    been reduced to zero, at which point the whole file has been transmitted or
+    received.
 
 Processing a given file:
 
@@ -186,17 +199,17 @@ Processing a given file:
     contents of the file. The contents of the file are then transferred from the
     original character array to another charcter array twice as large as the
     original, duplicating any c, m, p, and t characters encountered as the
-    transfer progresses. The resulting character array is then transmitted in
-    place of the original file contents.
+    transfer progresses. The resulting character array is then transmitted to
+    the recipient in place of the original file contents.
 
 
 Possible Error Conditions:
 
-    - The given file already exists on the server side
     - The given file already exists on the client side
+    - The given file already exists on the server side
 
 Notes:
     
-    If a proxy detects an error, an error message is sent back to the waiting
-    client to propagate the error. Similarly, if a server detects an error, an
-    error message is propagated back to the waiting client or proxy.
+    If a proxy detects an error, an error message is propogated back to the
+    waiting client. Similarly, if a server detects an error, an error message
+    is propagated back to the waiting client or proxy.
