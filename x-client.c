@@ -48,7 +48,7 @@ void get_file(int serverFd, char* lFile, char* rFile) {
     memset(message, 0, INPUT_MAX);
 
     /* Send file name */
-    if (send(serverFd, rFile, strlen(rFile), 0) == -1) {
+    if (send(serverFd, rFile, INPUT_MAX, 0) == -1) {
         printf("x-client: failed to transmit the get file name\n");
         return;
     }
@@ -121,6 +121,8 @@ int parse_cmd(char* src, char* del, char** dest) {
     int n = 0;
     char* token;
 
+    src = strtok(src, "\n");
+
     token = strtok(src, del);
     if (token == NULL) {
         return 0;
@@ -172,9 +174,7 @@ int main(int argc, char* argv[]) {
     /* Interact with user */
     command = calloc(INPUT_MAX, sizeof(char));
     inputs = calloc(N_INPUTS, sizeof(char*));
-    lFile = calloc(INPUT_MAX, sizeof(char));
-    rFile = calloc(INPUT_MAX, sizeof(char));
-    if (command == NULL || inputs == NULL || rFile == NULL || lFile == NULL) {
+    if (command == NULL || inputs == NULL) {
         printf("x-client: failed to allocate necessary memory\n");
         exit(1);
     }
@@ -191,8 +191,6 @@ int main(int argc, char* argv[]) {
                 exit(0);
             }
             if (strcmp(action, "get") == 0) {
-                printf("%s\n", lFile);
-                printf("%s\n", rFile);
                 get_file(serverFd, lFile, rFile);
             }
             else if (strcmp(action, "put") == 0) {
