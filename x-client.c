@@ -127,6 +127,7 @@ int parse_cmd(char* src, char* del, char** dest) {
     }
     do {
         if (n < 3) {
+            printf("%s\n", token);
             dest[n] = token;
             n += 1;
         }
