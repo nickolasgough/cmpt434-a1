@@ -48,7 +48,7 @@ void get_file(int serverFd, char* lFile, char* rFile) {
     memset(message, 0, INPUT_MAX);
 
     /* Send file name */
-    if (send(serverFd, rFile, INPUT_MAX, 0) == -1) {
+    if (send(serverFd, rFile, strlen(rFile), 0) == -1) {
         printf("x-client: failed to transmit the get file name\n");
         return;
     }
