@@ -150,27 +150,6 @@ void put_file(int clientFd, int serverFd) {
         return;
     }
 
-    sprintf(message, "%s", "ready");
-    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-        printf("tcp-proxy: failed to send put file name response\n");
-        return;
-    }
-    memset(message, 0, INPUT_MAX);
-
-    /* Receive file contents from client */
-    fDest = tcp_array_receive("tcp-proxy", clientFd);
-    if (fDest == NULL) {
-        printf("tcp-proxy: failed to receive the file from the client\n");
-        return;
-    }
-
-    /* Process given file contents */
-    tDest = proc_file(fDest);
-    if (tDest == NULL) {
-        printf("tcp-proxy: failed to process the given file\n");
-        return;
-    }
-
     /* Initiate the request with the server */
     sprintf(message, "%s", "put");
     if (send(serverFd, message, INPUT_MAX, 0) == -1) {
@@ -208,6 +187,27 @@ void put_file(int clientFd, int serverFd) {
         return;
     }
     memset(message, 0, INPUT_MAX);
+
+    /* Receive file contents from client */
+    sprintf(message, "%s", "ready");
+    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+        printf("tcp-proxy: failed to send put file name response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    fDest = tcp_array_receive("tcp-proxy", clientFd);
+    if (fDest == NULL) {
+        printf("tcp-proxy: failed to receive the file from the client\n");
+        return;
+    }
+
+    /* Process given file contents */
+    tDest = proc_file(fDest);
+    if (tDest == NULL) {
+        printf("tcp-proxy: failed to process the given file\n");
+        return;
+    }
 
     /* Send file contents to server */
     if (!tcp_array_transmit("tcp-proxy", serverFd, tDest)) {
