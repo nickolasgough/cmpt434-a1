@@ -154,27 +154,6 @@ void put_file(int clientFd, int serverFd, struct addrinfo* serverInfo) {
         return;
     }
 
-    sprintf(message, "%s", "ready");
-    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
-        printf("mixed-proxy: failed to send put file name response\n");
-        return;
-    }
-    memset(message, 0, INPUT_MAX);
-
-    /* Receive file contents from client */
-    fDest = tcp_array_receive("mixed-proxy", clientFd);
-    if (fDest == NULL) {
-        printf("mixed-proxy: failed to receive the file from the client\n");
-        return;
-    }
-
-    /* Process given file contents */
-    tDest = proc_file(fDest);
-    if (tDest == NULL) {
-        printf("mixed-proxy: failed to process the given file\n");
-        return;
-    }
-
     /* Initiate the request with the server */
     sprintf(message, "%s", "put");
     if (sendto(serverFd, message, INPUT_MAX, 0, serverAddr, serverLen) == -1) {
@@ -212,6 +191,27 @@ void put_file(int clientFd, int serverFd, struct addrinfo* serverInfo) {
         return;
     }
     memset(message, 0, INPUT_MAX);
+
+    /* Receive file contents from client */
+    sprintf(message, "%s", "ready");
+    if (send(clientFd, message, INPUT_MAX, 0) == -1) {
+        printf("mixed-proxy: failed to send put file name response\n");
+        return;
+    }
+    memset(message, 0, INPUT_MAX);
+
+    fDest = tcp_array_receive("mixed-proxy", clientFd);
+    if (fDest == NULL) {
+        printf("mixed-proxy: failed to receive the file from the client\n");
+        return;
+    }
+
+    /* Process given file contents */
+    tDest = proc_file(fDest);
+    if (tDest == NULL) {
+        printf("mixed-proxy: failed to process the given file\n");
+        return;
+    }
 
     /* Send file contents to server */
     if (!udp_array_transmit("mixed-proxy", serverFd, tDest, serverAddr, serverLen)) {
