@@ -14,6 +14,9 @@
 #include "x-common.h"
 
 
+#define N_INPUTS 3
+
+
 void get_file(int serverFd, char* lFile, char* rFile) {
     char* message;
 
@@ -114,8 +117,31 @@ void put_file(int serverFd, char* lFile, char* rFile) {
 }
 
 
+int parse_cmd(char* src, char* del, char** dest) {
+    int n = 0;
+    char* token;
+
+    token = strtok(src, del);
+    if (token == NULL) {
+        return 0;
+    }
+    do {
+        if (n < 3) {
+            dest[n] = token;
+        }
+        token = strtok(NULL, del);
+
+        n += 1;
+    } while (token != NULL);
+
+    return n < 3;
+}
+
+
 int main(int argc, char* argv[]) {
-    char* cmd;
+    char* command;
+    char** inputs;
+    char* action;
     char* lFile;
     char* rFile;
     char* sName;
@@ -145,29 +171,40 @@ int main(int argc, char* argv[]) {
     }
 
     /* Interact with user */
-    cmd = calloc(INPUT_MAX, sizeof(char));
+    command = calloc(INPUT_MAX, sizeof(char));
+    inputs = calloc(N_INPUTS, sizeof(char*));
     lFile = calloc(INPUT_MAX, sizeof(char));
     rFile = calloc(INPUT_MAX, sizeof(char));
-    if (cmd == NULL || rFile == NULL || lFile == NULL) {
+    if (command == NULL || inputs == NULL || rFile == NULL || lFile == NULL) {
         printf("x-client: failed to allocate necessary memory\n");
         exit(1);
     }
     while (1) {
         printf("x-client? ");
 
-        scanf("%s", cmd);
-        if (strcmp(cmd, "quit") == 0) {
-            exit(0);
-        }
+        fgets(command, INPUT_MAX, STD_IN);
+        if (parse_cmd(command, " ", inputs)) {
+            action = inputs[0];
+            lFile = inputs[1];
+            rFile = inputs[2];
 
-        scanf("%s %s", lFile, rFile);
-        if (strcmp(cmd, "get") == 0) {
-            get_file(serverFd, lFile, rFile);
-        }
-        else if (strcmp(cmd, "put") == 0) {
-            put_file(serverFd, lFile, rFile);
-        }
-        else {
+            if (strcmp(action, "quit") == 0) {
+                exit(0);
+            }
+            if (strcmp(action, "get") == 0) {
+                get_file(serverFd, lFile, rFile);
+            }
+            else if (strcmp(action, "put") == 0) {
+                put_file(serverFd, lFile, rFile);
+            }
+            else {
+                printf("Unknown command.\n");
+                printf("Known commands:\n");
+                printf("get <local file> <remote file>\n");
+                printf("put <local file> <remote file>\n");
+                printf("quit\n");
+            }
+        } else {
             printf("Unknown command.\n");
             printf("Known commands:\n");
             printf("get <local file> <remote file>\n");
