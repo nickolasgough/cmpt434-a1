@@ -36,6 +36,15 @@ received from the sender, transmit the acknowledgement, and then the next
 logical unit of data will be received recursively in the same way.
 
 
+Relevant Files:
+
+    x-client.c - tcp client implementation
+    tcp-proxy.c - tcp proxy implementation
+    tcp-server.c - tcp server implementation
+    mixed-proxy.c - tcd/udp proxy implementation
+    udp-server.c - udp server implementation
+
+
 Component Design:
 
 x-client ->
