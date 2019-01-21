@@ -98,7 +98,7 @@ int tcp_file_receive(char* prog, int recvFd, char* fName) {
             printf("%s: failed to receive the whole file\n", prog);
             return 0;
         }
-        fwrite(message, sizeof(char), INPUT_MAX, fPtr);
+        fwrite(message, sizeof(char), rAmount, fPtr);
 
         memset(message, 0, INPUT_MAX);
         fSize -= rSize;
@@ -150,7 +150,7 @@ int udp_file_receive(char* prog, int recvFd, char* fName, struct sockaddr* recvA
             printf("%s: failed to receive the whole file\n", prog);
             return 0;
         }
-        fwrite(message, sizeof(char), INPUT_MAX, fPtr);
+        fwrite(message, sizeof(char), rAmount, fPtr);
 
         memset(message, 0, INPUT_MAX);
         fSize -= rSize;
