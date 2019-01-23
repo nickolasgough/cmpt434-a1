@@ -25,6 +25,8 @@ Duration of busy session = db
 Average number of busy sessions = avgbs
 Average data rate = avgdr
 
+Achievable data transfer rate = adr
+
 
 ### 1
 
@@ -258,5 +260,13 @@ c:
 
 d:
 
-
-
+    1. Parallel computing would require the window size to be increased to
+       enable splitting the data over multiple streams without overlap and
+       reach the maxmimum transfer rate. For example, MIMO would benefit from
+       a larger window size to allow both streams to reach the maximum transfer
+       rate.
+    2. A larger window size would be beneficial if the error or loss rate of
+       of packet transmission is high. Increasing the window size enables the
+       sender to continue sending new packets while resending previous packets
+       without having to stop and wait for acknowledgements that the data was
+       received correctly.
